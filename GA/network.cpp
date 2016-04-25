@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "network.h"
-void InitNetwork(vector<Individual*>& population)
+void ResetNetwork(vector<Individual*>& population)
 {
 	int G[POPUSIZE][POPUSIZE];
 	int degree[POPUSIZE];

@@ -14,7 +14,7 @@ void GA::Init()
 		population.push_back(new Individual(func));
 		population[i]->Fit();
 	}
-	InitNetwork(population);
+	ResetNetwork(population);
 }
 
 void GA::Run()
