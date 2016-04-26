@@ -12,7 +12,6 @@ void GA::Init()
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		population.push_back(new Individual(func));
-		population[i]->Fit();
 	}
 	ResetNetwork(population);
 }
@@ -23,6 +22,9 @@ void GA::Run()
 	for (int g = 0; g < GMAX; g++)
 	{
 		Reproduct();
+#ifdef _SCALE_FREE_ONE
+		ResetNetwork(population);
+#endif
 	}
 }
 
@@ -66,7 +68,9 @@ void GA::Reproduct()
 		
 	}
 	population = Select(childPopulation);
+#ifndef _SCALE_FREE_ONE
 	AddIntoNetwork();////////看邻居的变化情况！！！！
+#endif
 	//for (auto i :childPopulation)
 	//{
 	//	//TODO: check whether it is correct
@@ -132,7 +136,9 @@ vector<Individual*> GA::Select(vector<Individual*> childPopulation)	//
 		{
 			//DOTO: the neighbor of tmp_c should be fixed::dynamic strategy has been implemented, not here
 			//DOTO: the individual which connects with tmp_pop[0] should be fixed::dynamic strategy has been implemented
+#ifndef _SCALE_FREE_ONE
 			RemovefromNetwork(next_population[0]);
+#endif
 			next_population[0] = *tmp_c;
 			make_heap(next_population.begin(), next_population.end(), Compare());
 		}
