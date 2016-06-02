@@ -3,17 +3,49 @@
 
 #include "stdafx.h"
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include "GA1.h"
 using namespace std;
 
 int main()
 {
-	//srand((unsigned)time(NULL));
-	cout << (double)0x7fffffff / 0xffffffff << endl;
-	cout << sizeof(int);
-	GA ga(2);
-	ga.Run();//test
-	system("pause");
+	srand((unsigned)time(NULL));
+	for (int funcID = 1; funcID < 5; funcID++)
+	{
+		stringstream txtname;
+		txtname << "GA_result_funcID=" << funcID;
+#ifdef _SCALE_FREE_STATIC
+		txtname << "_static";
+#endif
+#ifdef _SCALE_FREE_ONE
+		if (M0 == POPUSIZE)
+		{
+			txtname << "_basic";
+		}
+		else
+		{
+			txtname << "_one";
+		}
+
+#endif
+#ifdef _SCALE_FREE_DYNAMIC
+		txtname << "_dynamic";
+#endif
+#ifdef _WITH_FITNESS_STRATEGY
+		txtname << "_with_fitness_strategy";
+#endif
+		txtname << ".csv";
+		ofstream output(txtname.str());
+		GA ga(funcID);
+		ga.output = &output;
+		for (int i = 0; i < 20; i++)
+		{
+			cout << "The " << i + 1 << " times of " << txtname.str() << "." << endl;
+			ga.Run();//test
+		}
+	}
+	//system("pause");
     return 0;
 }
 

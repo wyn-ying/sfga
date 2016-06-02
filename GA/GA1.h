@@ -6,25 +6,35 @@
 #include "parameters.h"
 #include <map>
 #include <algorithm>
+#include <fstream>
 using namespace std;
 class GA
 {
 public:
 	Functions func;
 	vector<Individual*> population;
+	Individual* gbest;
+	ofstream* output;
 public:
 	GA(int func_idx);
 	void Init();
 	void Run();
 	void Reproduct();
-	void AddIntoNetwork();//dynamic
+	void AddIntoNetwork(vector<Individual*>& population);//dynamic
 	void RemovefromNetwork(Individual* individual);
-	vector<Individual*> Select(vector<Individual*> childPopulation);
+	void ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population);
+	void Select(vector<Individual*> childPopulation, vector<Individual*> &population);
+	void Free(vector<Individual*> population);
 private:
-	class Compare
+	class CmpWithFitness
 	{
 	public:
-		bool operator()(Individual* i1, Individual* i2);
+		bool operator()(Individual* i1, Individual* i2) { return i1->fitness < i2->fitness; };
+	};
+	class CmpWithDegree
+	{
+	public:
+		bool operator()(Individual* i1, Individual* i2) { return i1->neighbor.size() > i2->neighbor.size(); };
 	};
 	void Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM]);
 	void Mutate(unsigned long int genotype[DIM]);

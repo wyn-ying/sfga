@@ -41,7 +41,7 @@ void Individual::Encode()
 {
 	for (int d = 0; d < DIM; d++)
 	{
-		genotype[d] = (phenotype[d] - func->LB) / (func->UB - func->LB) * 0xffffffff;
+		genotype[d] = unsigned long((phenotype[d] - func->LB) / (func->UB - func->LB) * 0xffffffff);
 	}
 }
 void Individual::Decode()

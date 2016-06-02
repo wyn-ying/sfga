@@ -1,14 +1,18 @@
 #include "stdafx.h"
 #include "GA1.h"
+#include<iostream>
+using namespace std;
 
 GA::GA(int func_idx)
 {
-	func = *new Functions(func_idx);	
+	func = *new Functions(func_idx);
 }
 
 void GA::Init()
 {
 	rand();
+	population.clear();
+	vector<Individual*>().swap(population);
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		population.push_back(new Individual(func));
@@ -19,13 +23,27 @@ void GA::Init()
 void GA::Run()
 {
 	Init();
+	gbest = population[0];
 	for (int g = 0; g < GMAX; g++)
 	{
 		Reproduct();
 #ifdef _SCALE_FREE_ONE
 		ResetNetwork(population);
 #endif
+		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
+		{
+			if ((*i)->fitness< gbest->fitness)
+			{
+				gbest = (*i);
+			}
+		}
+		if (!(g%10))
+		{
+			*output << gbest->fitness << ",";
+		}
 	}
+	*output << gbest->fitness << endl;
+	Free(population);
 }
 
 void GA::Reproduct()
@@ -67,10 +85,8 @@ void GA::Reproduct()
 		}
 		
 	}
-	population = Select(childPopulation);
-#ifndef _SCALE_FREE_ONE
-	AddIntoNetwork();////////看邻居的变化情况！！！！
-#endif
+	Select(childPopulation, population);
+
 	//for (auto i :childPopulation)
 	//{
 	//	//TODO: check whether it is correct
@@ -85,7 +101,7 @@ void GA::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], u
 	unsigned long int tmp;
 	//Crossover
 	dptr = rand() % DIM;
-	bptr = rand() % sizeof(unsigned long int);
+	bptr = rand() % (sizeof(unsigned long int) * 8);
 	//cross the first [dptr] genes while the copy rest genes except the [dptr]th gene
 	for (int d = 0; d < dptr; d++)
 	{
@@ -120,38 +136,83 @@ void GA::Mutate(unsigned long int genotype[DIM])
 		genotype[d] ^= mut_tmp;
 	}
 }
+
 //select POPUSIZE individuals in POPUSIZE+CHILDSIZE individuals
-bool GA::Compare::operator()(Individual* i1, Individual* i2)
-{
-	return i1->fitness < i2->fitness;
-}
 //use heap to implement a top K algorithm with O(N  *logK)
-vector<Individual*> GA::Select(vector<Individual*> childPopulation)	//
+void GA::Select(vector<Individual*> childPopulation, vector<Individual*> &population)	//
 {
-	vector<Individual*> next_population = population;
-	make_heap(next_population.begin(), next_population.end(), Compare());
-	for (vector<Individual*>::iterator tmp_c = childPopulation.begin(); tmp_c != childPopulation.end(); tmp_c++)
+	vector<Individual*> next_population = population, dead_population, child_dead_population;
+	make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
+	for (vector<Individual*>::iterator child = childPopulation.begin(); child != childPopulation.end(); child++)
 	{
-		if ((*tmp_c)->fitness < next_population[0]->fitness)
+		if ((*child)->fitness < next_population[0]->fitness)
 		{
-			//DOTO: the neighbor of tmp_c should be fixed::dynamic strategy has been implemented, not here
-			//DOTO: the individual which connects with tmp_pop[0] should be fixed::dynamic strategy has been implemented
-#ifndef _SCALE_FREE_ONE
+#ifdef _SCALE_FREE_DYNAMIC
 			RemovefromNetwork(next_population[0]);
+			//delete next_population[0];	////////!!!!!!!!
 #endif
-			next_population[0] = *tmp_c;
-			make_heap(next_population.begin(), next_population.end(), Compare());
+#ifdef _SCALE_FREE_STATIC
+			if (next_population[0]->isparent)
+			{
+				dead_population.push_back(next_population[0]);
+			}
+#endif
+			next_population[0] = *child;
+			make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
+		}
+		else
+		{
+			child_dead_population.push_back(*child);
 		}
 	}
-	return next_population;
+#ifdef _SCALE_FREE_DYNAMIC
+	AddIntoNetwork(next_population);////////看邻居的变化情况！！！！
+#endif
+#ifdef _SCALE_FREE_STATIC
+	ReplaceinNetwork(next_population, dead_population);
+#endif
+	population = next_population;
+	Free(child_dead_population);
 }
 
-void GA::AddIntoNetwork()//dynamic
+void GA::ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population)
+{
+	
+#ifdef _WITH_FITNESS_STRATEGY
+	//TODO: 2 sort(s) when coding fitness version
+	sort(dead_population.begin(), dead_population.end(), CmpWithDegree());	//larger degree is at front
+	sort(next_population.begin(), next_population.end(), CmpWithFitness());	//lower fitness is at front
+#endif
+
+	vector<Individual*>::iterator dead_individual = dead_population.begin();
+	for (vector<Individual*>::iterator child = next_population.begin(); child != next_population.end(); child++)
+	{
+		if (!(*child)->isparent)
+		{
+			for (vector<Individual*>::iterator nbr = (*dead_individual)->neighbor.begin(); nbr != (*dead_individual)->neighbor.end(); nbr++)
+			{
+				for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+				{
+					if ((*nbrOfNbr) == (*dead_individual))
+					{
+						(*child)->neighbor.push_back((*nbr));
+						(*nbrOfNbr) = (*child);
+						break;
+					}
+				}
+			}
+			dead_individual++;
+		}
+	}
+	Free(dead_population);
+}
+
+void GA::AddIntoNetwork(vector<Individual*>& population)//dynamic
 {
 	map<vector<Individual*>::iterator, int> degree, fitRank, linkProb, linkProbTmp;
 	int sumProb = 0, sumProbTmp;
-	//worst is at front
-	sort(population.begin(), population.end(), Compare());
+	////worst is at front ??
+	sort(population.begin(), population.end(), CmpWithFitness());//lower fitness is at front
 	int fitRankCnt = 1, rnd_l, sumProbCnt;
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 	{
@@ -168,10 +229,10 @@ void GA::AddIntoNetwork()//dynamic
 		if (!(*child)->isparent)
 		{
 			linkProbTmp = linkProb;
-			for (int l = 0; l < M; l++)
+			sumProbTmp = sumProb;
+			for (int l = 0; l < M; l++)//TODO: the added edges equals the edges of remove individual
 			{
 				sumProbCnt = 0;
-				sumProbTmp = sumProb;
 				rnd_l = rand() % sumProbTmp;
 				for (vector<Individual*>::iterator parent = population.begin(); parent != population.end(); parent++)
 				{
@@ -186,8 +247,7 @@ void GA::AddIntoNetwork()//dynamic
 							(*parent)->neighbor.push_back((*child));
 							break;
 						}
-					}
-					
+					}	
 				}
 			}
 		}
@@ -209,4 +269,18 @@ void GA::RemovefromNetwork(Individual* individual)//dynamic
 		}
 		//(*nbr)->neighbor.erase(&individual);
 	}
+}
+
+void GA::Free(vector<Individual*> population)
+{
+	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
+	{
+		if (*i != NULL)
+		{
+			delete *i;
+			*i = NULL;
+		}
+	}
+	population.clear();
+	population.swap(vector<Individual*>());
 }
