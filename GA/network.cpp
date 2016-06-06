@@ -106,7 +106,7 @@ void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> population)
 			}
 		}
 		//TODO: experiments about the weight
-		p[i] = pow(M_E, -population[i]->fitness/population[0]->fitness);
+		p[i] = pow(M_E, -population[i]->funcVal/population[0]->funcVal);
 	}
 	double sum, sum_tmp, tmp, rnd;
 	for (int i = M0; i < POPUSIZE; i++)

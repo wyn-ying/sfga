@@ -32,17 +32,17 @@ void GA::Run()
 #endif
 		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 		{
-			if ((*i)->fitness< gbest->fitness)
+			if ((*i)->funcVal< gbest->funcVal)
 			{
 				gbest = (*i);
 			}
 		}
 		if (!(g%10))
 		{
-			*output << gbest->fitness << ",";
+			*output << gbest->funcVal << ",";
 		}
 	}
-	*output << gbest->fitness << endl;
+	*output << gbest->funcVal << endl;
 	Free(population);
 }
 
@@ -56,10 +56,13 @@ void GA::Reproduct()
 		(*i)->isparent = true;
 	}
 
+	Individual* parent1;
+	Individual* parent2;
+
 	while (childPopulation.size() < CHILDSIZE)
 	{
 		//randomly choose one from the population
-		rnd_i = rand() % POPUSIZE;
+		/*rnd_i = rand() % POPUSIZE;
 		if (population[rnd_i]->neighbor.empty())
 		{
 			memcpy(child1, population[rnd_i]->genotype, sizeof(unsigned long int)*DIM);
@@ -82,10 +85,47 @@ void GA::Reproduct()
 			Mutate(child2);
 			childPopulation.push_back(new Individual(func, child1));
 			childPopulation.push_back(new Individual(func, child2));
-		}
+		}*/
 		
+		parent1 = Select(population);
+		parent2 = Select(population);
+		if (rand() < RAND_MAX*P_CROSS)
+		{
+			Cross(parent1->genotype, parent2->genotype, child1, child2);
+		}
+		else
+		{
+			memcpy(child1, parent1->genotype, sizeof(unsigned long int)*DIM);
+			memcpy(child2, parent2->genotype, sizeof(unsigned long int)*DIM);
+		}
+		Mutate(child1);
+		Mutate(child2);
+		childPopulation.push_back(new Individual(func, child1));
+		childPopulation.push_back(new Individual(func, child2));
 	}
-	Select(childPopulation, population);
+	/*for (int i = 0; i < POPUSIZE; i++)
+	{
+		rnd_i = rand() % (POPUSIZE - i);
+		swap(population[rnd_i], population[POPUSIZE - 1 - i]);
+	}
+	for (int i = 1; i < POPUSIZE; i += 2)
+	{
+		if (rand() < RAND_MAX*P_CROSS)
+		{
+			Cross(population[i]->genotype, population[i - 1]->genotype, child1, child2);
+		}
+		else
+		{
+			memcpy(child1, population[i]->genotype, sizeof(unsigned long int)*DIM);
+			memcpy(child2, population[i - 1]->genotype, sizeof(unsigned long int)*DIM);
+		}
+		Mutate(child1);
+		Mutate(child2);
+		childPopulation.push_back(new Individual(func, child1));
+		childPopulation.push_back(new Individual(func, child2));
+	}*/
+
+	Filtrate(childPopulation, population);
 
 	//for (auto i :childPopulation)
 	//{
@@ -95,6 +135,22 @@ void GA::Reproduct()
 	//}
 }
 
+Individual* GA::Select(vector<Individual*> population)
+{
+	double sum_p = 0, tmp_p = 0, rnd;
+	vector<Individual*>::iterator i;
+	for (i = population.begin(); i != population.end(); i++)
+	{
+		sum_p += (*i)->funcVal;//TODO: wheel selection
+	}
+	rnd = (double)rand() / RAND_MAX * sum_p;
+	for (i = population.begin(); i != population.end(); i++)
+	{
+		tmp_p += (*i)->funcVal;
+		if (tmp_p > rnd) return *i;
+	}
+	return population[population.size() - 1];
+}
 void GA::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
 {
 	int dptr, bptr;
@@ -139,13 +195,13 @@ void GA::Mutate(unsigned long int genotype[DIM])
 
 //select POPUSIZE individuals in POPUSIZE+CHILDSIZE individuals
 //use heap to implement a top K algorithm with O(N  *logK)
-void GA::Select(vector<Individual*> childPopulation, vector<Individual*> &population)	//
+void GA::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population)	//
 {
 	vector<Individual*> next_population = population, dead_population, child_dead_population;
 	make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
 	for (vector<Individual*>::iterator child = childPopulation.begin(); child != childPopulation.end(); child++)
 	{
-		if ((*child)->fitness < next_population[0]->fitness)
+		if ((*child)->funcVal < next_population[0]->funcVal)
 		{
 #ifdef _SCALE_FREE_DYNAMIC
 			RemovefromNetwork(next_population[0]);

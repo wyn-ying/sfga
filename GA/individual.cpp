@@ -35,7 +35,7 @@ Individual::Individual(Functions &func, unsigned long int genotype[DIM])
 }
 void Individual::Fit()
 {
-	fitness = func->F(phenotype);
+	funcVal = func->F(phenotype);
 }
 void Individual::Encode()
 {

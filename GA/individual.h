@@ -10,6 +10,7 @@ class Individual
 public:
 	unsigned long int genotype[DIM];
 	double phenotype[DIM];
+	double funcVal;
 	double fitness;
 	bool isparent;
 	Functions* func;

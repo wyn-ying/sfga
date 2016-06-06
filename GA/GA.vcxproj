@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="functions.h" />
     <ClInclude Include="GA1.h" />
+    <ClInclude Include="GA2.h" />
     <ClInclude Include="individual.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="parameters.h" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="GA1.cpp" />
+    <ClCompile Include="GA2.cpp" />
     <ClCompile Include="individual.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />

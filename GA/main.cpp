@@ -5,12 +5,13 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "GA1.h"
+#include "GA2.h"
 using namespace std;
 
 int main()
 {
-	srand((unsigned)time(NULL));
+	srand(0);
+	//srand((unsigned)time(NULL));
 	for (int funcID = 1; funcID < 5; funcID++)
 	{
 		stringstream txtname;
@@ -37,7 +38,7 @@ int main()
 #endif
 		txtname << ".csv";
 		ofstream output(txtname.str());
-		GA ga(funcID);
+		GA0 ga(funcID);
 		ga.output = &output;
 		for (int i = 0; i < 20; i++)
 		{
