@@ -32,6 +32,7 @@ void GA0::Run()
 				gbest = (*i);
 			}
 		}
+		sort(population.begin(), population.end(), CmpWithFitness());
 		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 		{
 			(*i)->fitness = pow(M_E, -(*i)->funcVal / (*population.begin())->funcVal-1);
@@ -41,11 +42,11 @@ void GA0::Run()
 		if (!(g % 10))
 		{
 			*output << gbest->funcVal << ",";
-			cout << g << ':' << gbest->funcVal << "\t";
+			cout << g << "\t";
 		}
 	}
 	*output << gbest->funcVal << endl;
-	cout << endl;
+	cout << endl << "funcVal of gbest:" << gbest->funcVal << endl;
 	Free(population);
 }
 
@@ -79,9 +80,9 @@ void GA0::Reproduct()
 		childPopulation.push_back(new Individual(func, child1));
 		childPopulation.push_back(new Individual(func, child2));
 	}
-	sort(population.begin(), population.end(), CmpWithFitness());
-	Filtrate(childPopulation, population);
-	sort(population.begin(), population.end(), CmpWithFitness());
+	//sort(population.begin(), population.end(), CmpWithFitness());
+	Filtrate(childPopulation, population,2);
+	//sort(population.begin(), population.end(), CmpWithFitness());
 }
 
 Individual* GA0::Select(vector<Individual*> population)
@@ -169,6 +170,78 @@ void GA0::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	Free(dead_population);
 }
 
+void GA0::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population, int flag)	//
+{
+	vector<Individual*> next_population = population;
+	next_population.insert(next_population.end(), childPopulation.begin(), childPopulation.end());
+	sort(next_population.begin(), next_population.end(),CmpWithFitness());
+	
+	vector<Individual*>::iterator it = next_population.begin(), tmp = next_population.begin();
+	switch (flag)
+	{
+	case 1:	//elitism
+		for (int i = 0; i < POPUSIZE; i++)
+		{
+			it++;
+		}
+		copy(next_population.begin(), it, population.begin());
+		Free(it, next_population.end());
+		next_population.clear();
+		next_population.swap(vector<Individual*>());
+		break;
+	case 2:	//tournament
+		int min;
+		population.clear();
+		population.push_back(new Individual(func, gbest->genotype));
+		gbest = population[0];
+		it++;
+		for (int i = 1; i < POPUSIZE; i++)
+		{
+			//TODO:如果population复制的是next_population中的指针，那得考虑释放内存的问题。
+			//要么swap掉，要么clear掉population，再重新赋对象
+			min = Tournament(next_population, CANDIDATE_SIZE);
+			it = next_population.begin();
+			for (int j = 0; j < min; j++)
+			{
+				it++;
+			}
+			//swap(*it, *tmp);//TODO:swap完后可以再用case 1的办法复制到population中。问题是swap导致锦标赛不能重复
+			population.push_back(new Individual(func, (*it)->genotype));
+		}
+		
+		Free(next_population);//貌似有问题
+		break;
+	default:
+		break;
+	}
+
+}
+
+int GA0::Tournament(vector<Individual*> population, int candidate_size)
+{
+	int tmp, swp, min = population.size();
+	int *rank = new int[population.size()];
+	for (int i = 0; i < population.size(); i++)
+	{
+		rank[i] = i;
+	}
+	for (int i = 0; i < candidate_size; i++)
+	{
+		swp = i + rand() % (population.size() - i);
+		tmp = rank[i];
+		rank[i] = rank[swp];
+		rank[swp] = rank[tmp];
+	}
+	for (int i = 0; i < candidate_size; i++)
+	{
+		if (rank[i] < min)
+		{
+			min = rank[i];
+		}
+	}
+	delete [] rank;
+	return min;
+}
 void GA0::Free(vector<Individual*> population)
 {
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
@@ -182,3 +255,16 @@ void GA0::Free(vector<Individual*> population)
 	population.clear();
 	population.swap(vector<Individual*>());
 }
+
+void GA0::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end)
+{
+	for (vector<Individual*>::iterator i = begin; i != end; i++)
+	{
+		if (*i != NULL)
+		{
+			delete *i;
+			*i = NULL;
+		}
+	}
+}
+

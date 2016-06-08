@@ -10,8 +10,7 @@ using namespace std;
 
 int main()
 {
-	srand(0);
-	//srand((unsigned)time(NULL));
+	srand((unsigned)time(NULL));
 	for (int funcID = 1; funcID < 5; funcID++)
 	{
 		stringstream txtname;
