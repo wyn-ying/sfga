@@ -39,6 +39,7 @@ void GA1::Run()
 		if (!(g%10))
 		{
 			*output << gbest->funcVal << ",";
+			cout << g << "\t";
 		}
 	}
 	*output << gbest->funcVal << endl;
@@ -79,7 +80,7 @@ void GA1::Reproduct()
 	Filtrate(childPopulation, population);
 }
 
-Individual* GA1::Select(vector<Individual*> population)
+vector<Individual*>::iterator GA1::Select(vector<Individual*> population)
 {
 	double sum_p = 0, tmp_p = 0, rnd;
 	vector<Individual*>::iterator i;
@@ -92,9 +93,9 @@ Individual* GA1::Select(vector<Individual*> population)
 	{
 		tmp_p += (*i)->fitness;
 		if (tmp_p > rnd)
-			return *i;
+			return i;
 	}
-	return population[population.size() - 1];
+	return population.end()-1;
 }
 void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
 {
@@ -181,20 +182,32 @@ void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	vector<Individual*>::iterator it = next_population.begin();
 	//wheel
 	int fit = 1;
-	Individual* s = NULL;
+	vector<Individual*>::iterator s=next_population.begin();
 	population.clear();
 	population.push_back(new Individual(func, next_population[0]->genotype));
 	population[0]->fitness = fit++;
+	next_population[0]->first_flag = false;
 	it++;
 	for (; it != next_population.end(); it++)
 	{
 		(*it)->fitness = 1 / sqrt(fit++);
+		(*it)->first_flag = true;
 	}
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		s = Select(next_population);
-		population.push_back(new Individual(func, s->genotype));
+		population.push_back(new Individual(func, *s));
+#ifdef _SCALE_FREE_STATIC
+		(*s)->first_flag = false;
+		if ((*s)->first_flag)// if a parent individual is chosen twice or more, treat it as a child
+		{
+			(*(population.end() - 1))->isparent = false;
+			(*(population.end() - 1))->neighbor.clear();
+			(*(population.end() - 1))->neighbor.swap(vector<Individual*>());
+		}
+#endif
 	}
+
 	Free(next_population);
 }
 
