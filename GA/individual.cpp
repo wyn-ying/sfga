@@ -2,6 +2,7 @@
 #include "individual.h"
 Individual::Individual(Functions &func)
 {
+	copy = nullptr;
 	isparent = false;
 	this->func = &func;
 	for (int d = 0; d < DIM; d++)
@@ -13,6 +14,7 @@ Individual::Individual(Functions &func)
 }
 Individual::Individual(Functions &func, double phenotype[DIM])
 {
+	copy = nullptr;
 	isparent = false;
 	this->func = &func;
 	for (int d = 0; d < DIM; d++)
@@ -24,6 +26,7 @@ Individual::Individual(Functions &func, double phenotype[DIM])
 }
 Individual::Individual(Functions &func, unsigned long int genotype[DIM])
 {
+	copy = nullptr;
 	isparent = false;
 	this->func = &func;
 	for (int d = 0; d < DIM; d++)
@@ -32,6 +35,16 @@ Individual::Individual(Functions &func, unsigned long int genotype[DIM])
 	}
 	Decode();
 	Fit();
+}
+Individual::Individual(Functions &func, Individual* individual)
+{
+	copy = nullptr;
+	isparent = individual->isparent;
+	memcpy(genotype, individual->genotype, sizeof(genotype));
+	memcpy(phenotype, individual->phenotype, sizeof(phenotype));
+	funcVal = individual->funcVal;
+	this->func = &func;
+	individual->copy = this;
 }
 void Individual::Fit()
 {
@@ -53,11 +66,11 @@ void Individual::Decode()
 }
 Individual::~Individual()
 {
+	copy = nullptr;
 	func = nullptr;
 	for (auto i : neighbor)
 	{
 		i = nullptr;
 		//TODO: delete this from its neighbor
-
 	}
 }

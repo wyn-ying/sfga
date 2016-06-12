@@ -148,9 +148,11 @@
     <ClInclude Include="functions.h" />
     <ClInclude Include="GA1.h" />
     <ClInclude Include="GA2.h" />
+    <ClInclude Include="GA3.h" />
     <ClInclude Include="individual.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="parameters.h" />
+    <ClInclude Include="SGA.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -158,9 +160,11 @@
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="GA1.cpp" />
     <ClCompile Include="GA2.cpp" />
+    <ClCompile Include="GA3.cpp" />
     <ClCompile Include="individual.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="network.cpp" />
+    <ClCompile Include="SGA.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

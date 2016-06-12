@@ -1,17 +1,18 @@
 #include "stdafx.h"
-#include "GA1.h"
+#include "GA3.h"
 #include<iostream>
 using namespace std;
 
-GA1::GA1(int func_idx)
+GA3::GA3(int func_idx)
 {
 	func = *new Functions(func_idx);
 }
 
-void GA1::Init()
+void GA3::Init()
 {
 	rand();
 	population.clear();
+	vector<Individual*>().swap(population);
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		population.push_back(new Individual(func));
@@ -19,49 +20,83 @@ void GA1::Init()
 	ResetNetwork(population);
 }
 
-void GA1::Run()
+void GA3::Run()
 {
 	Init();
+	gbest = population[0];
 	for (int g = 0; g < GMAX; g++)
 	{
-		Reproduct();
-#ifdef _SCALE_FREE_ONE
-		ResetNetwork(population);
-#endif
-		gbest = population[0];
 		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 		{
-			if ((*i)->funcVal< gbest->funcVal)
+			if ((*i)->funcVal < gbest->funcVal)
 			{
 				gbest = (*i);
 			}
 		}
-		if (!(g%10))
+		sort(population.begin(), population.end(), CmpWithFitness());
+		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
+		{
+			(*i)->fitness = pow(M_E, -(*i)->funcVal / (*population.begin())->funcVal - 1);
+			//(*i)->fitness = population[POPUSIZE - 1]->funcVal - (*i)->funcVal;
+		}
+		Reproduct();
+#ifdef _SCALE_FREE_ONE
+		ResetNetwork(population);
+#endif
+		if (!(g % 10))
 		{
 			*output << gbest->funcVal << ",";
+			cout << g << "\t";
 		}
 	}
 	*output << gbest->funcVal << endl;
-	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
+	cout << endl << "funcVal of gbest:" << gbest->funcVal << endl;
 	Free(population);
 }
 
-void GA1::Reproduct()
+void GA3::Reproduct()
 {
 	vector<Individual*> childPopulation;
 	unsigned long int child1[DIM], child2[DIM];
-	Individual* parent1;
-	Individual* parent2;
-
+	int rnd_i, rnd_n;
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end();i++)
 	{
 		(*i)->isparent = true;
 	}
 
-	for (int i = 0; i < POPUSIZE; i++)
+	Individual* parent1;
+	Individual* parent2;
+
+	while (childPopulation.size() < (POPUSIZE*2))
 	{
-		parent1 = population[i];
-		parent2 = population[i]->neighbor[rand()%population[i]->neighbor.size()];
+		//randomly choose one from the population
+		/*rnd_i = rand() % POPUSIZE;
+		if (population[rnd_i]->neighbor.empty())
+		{
+		memcpy(child1, population[rnd_i]->genotype, sizeof(unsigned long int)*DIM);
+		Mutate(child1);
+		childPopulation.push_back(new Individual(func, child1));
+		}
+		else//randomly choose one from the first one's neighbor
+		{
+		rnd_n = rand() % population[rnd_i]->neighbor.size();
+		if (rand() < RAND_MAX*P_CROSS)
+		{
+		Cross(population[rnd_i]->genotype, population[rnd_n]->genotype, child1, child2);
+		}
+		else
+		{
+		memcpy(child1, population[rnd_i]->genotype, sizeof(unsigned long int)*DIM);
+		memcpy(child2, population[rnd_n]->genotype, sizeof(unsigned long int)*DIM);
+		}
+		Mutate(child1);
+		Mutate(child2);
+		childPopulation.push_back(new Individual(func, child1));
+		childPopulation.push_back(new Individual(func, child2));
+		}*/
+
+		parent1 = Select(population);
+		parent2 = Select(population);
 		if (rand() < RAND_MAX*P_CROSS)
 		{
 			Cross(parent1->genotype, parent2->genotype, child1, child2);
@@ -70,16 +105,45 @@ void GA1::Reproduct()
 		{
 			memcpy(child1, parent1->genotype, sizeof(unsigned long int)*DIM);
 			memcpy(child2, parent2->genotype, sizeof(unsigned long int)*DIM);
-			Mutate(child1);
-			Mutate(child2);
 		}
+		Mutate(child1);
+		Mutate(child2);
 		childPopulation.push_back(new Individual(func, child1));
 		childPopulation.push_back(new Individual(func, child2));
 	}
+	/*for (int i = 0; i < POPUSIZE; i++)
+	{
+	rnd_i = rand() % (POPUSIZE - i);
+	swap(population[rnd_i], population[POPUSIZE - 1 - i]);
+	}
+	for (int i = 1; i < POPUSIZE; i += 2)
+	{
+	if (rand() < RAND_MAX*P_CROSS)
+	{
+	Cross(population[i]->genotype, population[i - 1]->genotype, child1, child2);
+	}
+	else
+	{
+	memcpy(child1, population[i]->genotype, sizeof(unsigned long int)*DIM);
+	memcpy(child2, population[i - 1]->genotype, sizeof(unsigned long int)*DIM);
+	}
+	Mutate(child1);
+	Mutate(child2);
+	childPopulation.push_back(new Individual(func, child1));
+	childPopulation.push_back(new Individual(func, child2));
+	}*/
+
 	Filtrate(childPopulation, population);
+
+	//for (auto i :childPopulation)
+	//{
+	//	//TODO: check whether it is correct
+	//	delete i;
+	//	i = nullptr;
+	//}
 }
 
-Individual* GA1::Select(vector<Individual*> population)
+Individual* GA3::Select(vector<Individual*> population)
 {
 	double sum_p = 0, tmp_p = 0, rnd;
 	vector<Individual*>::iterator i;
@@ -91,12 +155,11 @@ Individual* GA1::Select(vector<Individual*> population)
 	for (i = population.begin(); i != population.end(); i++)
 	{
 		tmp_p += (*i)->fitness;
-		if (tmp_p > rnd)
-			return *i;
+		if (tmp_p > rnd) return *i;
 	}
 	return population[population.size() - 1];
 }
-void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
+void GA3::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
 {
 	int dptr, bptr;
 	unsigned long int tmp;
@@ -120,13 +183,13 @@ void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], 
 	child1[dptr] ^= tmp;
 	child2[dptr] ^= tmp;
 }
-void GA1::Mutate(unsigned long int genotype[DIM])
+void GA3::Mutate(unsigned long int genotype[DIM])
 {
 	int mut_tmp;
 	for (int d = 0; d < DIM; d++)
 	{
 		mut_tmp = 0;
-		for (int i = 0; i < sizeof(unsigned long int) * 8; i++)
+		for (int i = 0; i < 32; i++)
 		{
 			mut_tmp <<= 1;
 			if (rand()<P_MUTATE*RAND_MAX)
@@ -140,65 +203,43 @@ void GA1::Mutate(unsigned long int genotype[DIM])
 
 //select POPUSIZE individuals in POPUSIZE+CHILDSIZE individuals
 //use heap to implement a top K algorithm with O(N  *logK)
-void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population)	//
+void GA3::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population)	//
 {
-//	vector<Individual*> next_population = population, dead_population, child_dead_population;
-//	make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
-//	for (vector<Individual*>::iterator child = childPopulation.begin(); child != childPopulation.end(); child++)
-//	{
-//		if ((*child)->funcVal < next_population[0]->funcVal)
-//		{
-//#ifdef _SCALE_FREE_DYNAMIC
-//			RemovefromNetwork(next_population[0]);
-//			//delete next_population[0];	////////!!!!!!!!
-//#endif
-//#ifdef _SCALE_FREE_STATIC
-//			if (next_population[0]->isparent)
-//			{
-//				dead_population.push_back(next_population[0]);
-//			}
-//#endif
-//			next_population[0] = *child;
-//			make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
-//		}
-//		else
-//		{
-//			child_dead_population.push_back(*child);
-//		}
-//	}
-//#ifdef _SCALE_FREE_DYNAMIC
-//	AddIntoNetwork(next_population);////////ï¿½ï¿½ï¿½Ú¾ÓµÄ±ä»¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-//#endif
-//#ifdef _SCALE_FREE_STATIC
-//	ReplaceinNetwork(next_population, dead_population);
-//#endif
-//	population = next_population;
-//	Free(child_dead_population);
-	vector<Individual*> next_population = population;
-	next_population.insert(next_population.end(), childPopulation.begin(), childPopulation.end());
-	sort(next_population.begin(), next_population.end(), CmpWithFitness());
-
-	vector<Individual*>::iterator it = next_population.begin();
-	//wheel
-	int fit = 1;
-	Individual* s = NULL;
-	population.clear();
-	population.push_back(new Individual(func, next_population[0]->genotype));
-	population[0]->fitness = fit++;
-	it++;
-	for (; it != next_population.end(); it++)
+	vector<Individual*> next_population = population, dead_population, child_dead_population;
+	make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
+	for (vector<Individual*>::iterator child = childPopulation.begin(); child != childPopulation.end(); child++)
 	{
-		(*it)->fitness = 1 / sqrt(fit++);
+		if ((*child)->funcVal < next_population[0]->funcVal)
+		{
+#ifdef _SCALE_FREE_DYNAMIC
+			RemovefromNetwork(next_population[0]);
+			//delete next_population[0];	////////!!!!!!!!
+#endif
+#ifdef _SCALE_FREE_STATIC
+			if (next_population[0]->isparent)
+			{
+				dead_population.push_back(next_population[0]);
+			}
+#endif
+			next_population[0] = *child;
+			make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
+		}
+		else
+		{
+			child_dead_population.push_back(*child);
+		}
 	}
-	for (int i = 0; i < POPUSIZE; i++)
-	{
-		s = Select(next_population);
-		population.push_back(new Individual(func, s->genotype));
-	}
-	Free(next_population);
+#ifdef _SCALE_FREE_DYNAMIC
+	AddIntoNetwork(next_population);////////¿´ÁÚ¾ÓµÄ±ä»¯Çé¿ö£¡£¡£¡£¡
+#endif
+#ifdef _SCALE_FREE_STATIC
+	ReplaceinNetwork(next_population, dead_population);
+#endif
+	population = next_population;
+	Free(child_dead_population);
 }
 
-void GA1::ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population)
+void GA3::ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population)
 {
 
 #ifdef _WITH_FITNESS_STRATEGY
@@ -230,7 +271,7 @@ void GA1::ReplaceinNetwork(vector<Individual*> next_population, vector<Individua
 	Free(dead_population);
 }
 
-void GA1::AddIntoNetwork(vector<Individual*>& population)//dynamic
+void GA3::AddIntoNetwork(vector<Individual*>& population)//dynamic
 {
 	map<vector<Individual*>::iterator, int> degree, fitRank, linkProb, linkProbTmp;
 	int sumProb = 0, sumProbTmp;
@@ -277,7 +318,7 @@ void GA1::AddIntoNetwork(vector<Individual*>& population)//dynamic
 	}
 }
 
-void GA1::RemovefromNetwork(Individual* individual)//dynamic
+void GA3::RemovefromNetwork(Individual* individual)//dynamic
 {
 	for (vector<Individual*>::iterator nbr = individual->neighbor.begin(); nbr != individual->neighbor.end(); nbr++)
 	{
@@ -294,7 +335,7 @@ void GA1::RemovefromNetwork(Individual* individual)//dynamic
 	}
 }
 
-void GA1::Free(vector<Individual*> population)
+void GA3::Free(vector<Individual*> population)
 {
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 	{
@@ -306,16 +347,4 @@ void GA1::Free(vector<Individual*> population)
 	}
 	population.clear();
 	population.swap(vector<Individual*>());
-}
-
-void GA1::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end)
-{
-	for (vector<Individual*>::iterator i = begin; i != end; i++)
-	{
-		if (*i != NULL)
-		{
-			delete *i;
-			*i = NULL;
-		}
-	}
 }

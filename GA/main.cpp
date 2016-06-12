@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "GA2.h"
+#include "GA1.h"
 using namespace std;
 
 int main()
@@ -37,7 +37,7 @@ int main()
 #endif
 		txtname << ".csv";
 		ofstream output(txtname.str());
-		GA0 ga(funcID);
+		GA1 ga(funcID);
 		ga.output = &output;
 		for (int i = 0; i < 20; i++)
 		{

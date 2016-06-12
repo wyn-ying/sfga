@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <fstream>
 using namespace std;
-class GA1
+class GA3
 {
 public:
 	Functions func;
@@ -16,7 +16,7 @@ public:
 	Individual* gbest;
 	ofstream* output;
 public:
-	GA1(int func_idx);
+	GA3(int func_idx);
 	void Init();
 	void Run();
 	void Reproduct();
@@ -25,7 +25,6 @@ public:
 	void ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population);
 	void Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population);
 	void Free(vector<Individual*> population);
-	void Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end);
 private:
 	class CmpWithFitness
 	{

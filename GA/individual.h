@@ -15,10 +15,12 @@ public:
 	bool isparent;
 	Functions* func;
 	vector<Individual*> neighbor;
+	Individual* copy;
 public:
 	Individual(Functions &func);
 	Individual(Functions &func, double phenotype[DIM]);
 	Individual(Functions &func, unsigned long int genotype[DIM]);
+	Individual(Functions &func, Individual* individual);
 	void Fit();
 	void Encode();
 	void Decode();

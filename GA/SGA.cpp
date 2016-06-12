@@ -1,14 +1,14 @@
 #include "stdafx.h"
-#include "GA2.h"
+#include "SGA.h"
 #include<iostream>
 using namespace std;
 
-GA0::GA0(int func_idx)
+GA::GA(int func_idx)
 {
 	func = *new Functions(func_idx);
 }
 
-void GA0::Init()
+void GA::Init()
 {
 	rand();
 	population.clear();
@@ -18,7 +18,7 @@ void GA0::Init()
 	}
 }
 
-void GA0::Run()
+void GA::Run()
 {
 	Init();
 	for (int g = 0; g < GMAX; g++)
@@ -26,7 +26,7 @@ void GA0::Run()
 		sort(population.begin(), population.end(), CmpWithFitness());
 		int fit = 1;
 		Reproduct();
-				gbest = population[0];
+		gbest = population[0];
 		for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 		{
 			if ((*i)->funcVal < gbest->funcVal)
@@ -45,7 +45,7 @@ void GA0::Run()
 	Free(population);
 }
 
-void GA0::Reproduct()
+void GA::Reproduct()
 {
 	vector<Individual*> child_population;
 	unsigned long int child1[DIM], child2[DIM];
@@ -68,16 +68,16 @@ void GA0::Reproduct()
 			Mutate(child1);
 			Mutate(child2);
 		}
-		
+
 		child_population.push_back(new Individual(func, child1));
 		child_population.push_back(new Individual(func, child2));
 	}
 	//sort(population.begin(), population.end(), CmpWithFitness());
-	Filtrate(child_population, population,3);
+	Filtrate(child_population, population, 3);
 	//sort(population.begin(), population.end(), CmpWithFitness());
 }
 
-Individual* GA0::Select(vector<Individual*> population)
+Individual* GA::Select(vector<Individual*> population)
 {
 	double sum_p = 0, tmp_p = 0, rnd;
 	vector<Individual*>::iterator i;
@@ -89,12 +89,12 @@ Individual* GA0::Select(vector<Individual*> population)
 	for (i = population.begin(); i != population.end(); i++)
 	{
 		tmp_p += (*i)->fitness;
-		if (tmp_p > rnd) 
+		if (tmp_p > rnd)
 			return *i;
 	}
 	return population[population.size() - 1];
 }
-void GA0::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
+void GA::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
 {
 	int dptr, bptr;
 	unsigned long int tmp;
@@ -118,16 +118,16 @@ void GA0::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], 
 	child1[dptr] ^= tmp;
 	child2[dptr] ^= tmp;
 }
-void GA0::Mutate(unsigned long int genotype[DIM])
+void GA::Mutate(unsigned long int genotype[DIM])
 {
 	int mut_tmp;
 	for (int d = 0; d < DIM; d++)
 	{
 		mut_tmp = 0;
-		for (int i = 0; i < sizeof(unsigned long int)*8; i++)
+		for (int i = 0; i < sizeof(unsigned long int) * 8; i++)
 		{
 			mut_tmp <<= 1;
-			if (rand()<P_MUTATE*RAND_MAX)
+			if (rand() < P_MUTATE*RAND_MAX)
 			{
 				mut_tmp += 1;
 			}
@@ -136,20 +136,20 @@ void GA0::Mutate(unsigned long int genotype[DIM])
 	}
 }
 
-void GA0::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population, int flag)	//
+void GA::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population, int flag)	//
 {
 	vector<Individual*> next_population = population;
 	next_population.insert(next_population.end(), childPopulation.begin(), childPopulation.end());
-	sort(next_population.begin(), next_population.end(),CmpWithFitness());
-	
+	sort(next_population.begin(), next_population.end(), CmpWithFitness());
+
 	vector<Individual*>::iterator it = next_population.begin();
 	//wheel
 	int fit = 1;
 	Individual* s = NULL;
 	population.clear();
-//	population.push_back(new Individual(func, next_population[0]->genotype));
-//	population[0]->fitness = fit++;
-//	it++;
+	//	population.push_back(new Individual(func, next_population[0]->genotype));
+	//	population[0]->fitness = fit++;
+	//	it++;
 	for (; it != next_population.end(); it++)
 	{
 		(*it)->fitness = 1 / sqrt(fit++);
@@ -162,7 +162,7 @@ void GA0::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	Free(next_population);
 }
 
-void GA0::Free(vector<Individual*> population)
+void GA::Free(vector<Individual*> population)
 {
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 	{
@@ -176,7 +176,7 @@ void GA0::Free(vector<Individual*> population)
 	population.swap(vector<Individual*>());
 }
 
-void GA0::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end)
+void GA::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end)
 {
 	for (vector<Individual*>::iterator i = begin; i != end; i++)
 	{

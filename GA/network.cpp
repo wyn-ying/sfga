@@ -2,7 +2,7 @@
 #include "network.h"
 
 void SetNetByBA(int G[POPUSIZE][POPUSIZE]);
-void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> population);
+void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> &population);
 
 void ResetNetwork(vector<Individual*>& population)
 {
@@ -16,13 +16,10 @@ void ResetNetwork(vector<Individual*>& population)
 		}
 	}
 #ifdef _WITH_FITNESS_STRATEGY
-	sort(population.begin(), population.end(), Cmp());
 	SetNetByFitness(G, population);
 #else
 	SetNetByBA(G);
 #endif
-	//fill individual.neighbor
-
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		population[i]->neighbor.clear();
@@ -34,6 +31,12 @@ void ResetNetwork(vector<Individual*>& population)
 			}
 		}
 	}
+//#ifdef _WITH_FITNESS_STRATEGY
+//	for (int i = 0; i < POPUSIZE - 1; i++)
+//	{
+//		swap(population[i], population[rand() % (POPUSIZE - 1 - i) + i + 1]);
+//	}
+//#endif
 }
 
 void SetNetByBA(int G[POPUSIZE][POPUSIZE])
@@ -89,12 +92,14 @@ void SetNetByBA(int G[POPUSIZE][POPUSIZE])
 	}
 }
 
-void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> population)
+void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> &population)
 {
 	double p[POPUSIZE], p_tmp[POPUSIZE];
+	sort(population.begin(), population.end(), Cmp());
+	int fit = 1;
 	for (int i = 0; i < POPUSIZE; i++)
 	{
-		p[i] = 0;
+		population[i]->fitness = 1 / sqrt(fit++);
 	}
 	for (int i = 0; i < M0; i++)
 	{
@@ -105,12 +110,12 @@ void SetNetByFitness(int G[POPUSIZE][POPUSIZE], vector<Individual*> population)
 				G[i][j] = 1;
 			}
 		}
-		//TODO: experiments about the weight
-		p[i] = pow(M_E, -population[i]->funcVal/population[0]->funcVal);
+		p[i] = population[i]->fitness;
 	}
 	double sum, sum_tmp, tmp, rnd;
 	for (int i = M0; i < POPUSIZE; i++)
 	{
+		p[i] = population[i]->fitness;
 		sum = 0;
 		for (int j = 0; j < i; j++)
 		{

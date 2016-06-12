@@ -36,10 +36,16 @@
     <ClInclude Include="network.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="GA1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="GA2.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GA1.h">
+    <ClInclude Include="GA3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SGA.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,6 +69,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GA2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GA3.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SGA.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

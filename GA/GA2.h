@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <fstream>
 using namespace std;
-class GA1
+class GA0
 {
 public:
 	Functions func;
@@ -16,14 +16,12 @@ public:
 	Individual* gbest;
 	ofstream* output;
 public:
-	GA1(int func_idx);
+	GA0(int func_idx);
 	void Init();
 	void Run();
 	void Reproduct();
-	void AddIntoNetwork(vector<Individual*>& population);//dynamic
-	void RemovefromNetwork(Individual* individual);
-	void ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population);
 	void Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population);
+	void Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population, int flag);
 	void Free(vector<Individual*> population);
 	void Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end);
 private:
@@ -40,4 +38,5 @@ private:
 	Individual* Select(vector<Individual*> population);
 	void Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM]);
 	void Mutate(unsigned long int genotype[DIM]);
+	int Tournament(vector<Individual*> population, int candidate_size);
 };
