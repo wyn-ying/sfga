@@ -37,7 +37,7 @@ private:
 	public:
 		bool operator()(Individual* i1, Individual* i2) { return i1->neighbor.size() > i2->neighbor.size(); };
 	};
-	vector<Individual*>::iterator GA1::Select(vector<Individual*> population);
+	Individual* GA1::Select(vector<Individual*> population);
 	void Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM]);
 	void Mutate(unsigned long int genotype[DIM]);
 };

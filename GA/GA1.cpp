@@ -80,22 +80,21 @@ void GA1::Reproduct()
 	Filtrate(childPopulation, population);
 }
 
-vector<Individual*>::iterator GA1::Select(vector<Individual*> population)
+Individual* GA1::Select(vector<Individual*> population)
 {
 	double sum_p = 0, tmp_p = 0, rnd;
 	vector<Individual*>::iterator i;
 	for (i = population.begin(); i != population.end(); i++)
 	{
-		sum_p += (*i)->fitness;//TODO: wheel selection
+		sum_p += (*i)->fitness;
 	}
 	rnd = (double)rand() / RAND_MAX * sum_p;
 	for (i = population.begin(); i != population.end(); i++)
 	{
 		tmp_p += (*i)->fitness;
-		if (tmp_p > rnd)
-			return i;
+		if (tmp_p > rnd) return *i;
 	}
-	return population.end()-1;
+	return population[population.size()-1];
 }
 void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
 {
@@ -182,7 +181,7 @@ void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	vector<Individual*>::iterator it = next_population.begin();
 	//wheel
 	int fit = 1;
-	vector<Individual*>::iterator s=next_population.begin();
+	Individual* s = nullptr;
 	population.clear();
 	population.push_back(new Individual(func, next_population[0]->genotype));
 	population[0]->fitness = fit++;
@@ -196,16 +195,7 @@ void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		s = Select(next_population);
-		population.push_back(new Individual(func, *s));
-#ifdef _SCALE_FREE_STATIC
-		(*s)->first_flag = false;
-		if ((*s)->first_flag)// if a parent individual is chosen twice or more, treat it as a child
-		{
-			(*(population.end() - 1))->isparent = false;
-			(*(population.end() - 1))->neighbor.clear();
-			(*(population.end() - 1))->neighbor.swap(vector<Individual*>());
-		}
-#endif
+		population.push_back(new Individual(func, s->genotype));
 	}
 
 	Free(next_population);
