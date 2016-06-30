@@ -38,13 +38,12 @@ Individual::Individual(Functions &func, unsigned long int genotype[DIM])
 }
 Individual::Individual(Functions &func, Individual* individual)
 {
-	copy = nullptr;
+	copy = individual;
 	isparent = individual->isparent;
 	memcpy(genotype, individual->genotype, sizeof(genotype));
 	memcpy(phenotype, individual->phenotype, sizeof(phenotype));
 	funcVal = individual->funcVal;
 	this->func = &func;
-	individual->copy = this;
 }
 void Individual::Fit()
 {

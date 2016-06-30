@@ -2,13 +2,13 @@
 #define LENGTH		32
 #define P_CROSS		0.95
 #define P_MUTATE	0.1
-#define POPUSIZE	125	//125
+#define POPUSIZE	100	//125
 //#define CHILDSIZE	252	//125
 #define DIM			30	//30
 
 
 //Network
-#define M0			125
+#define M0			100
 #define M			4
 #define P_STRATEGY	0.5
 #define _TOPO_STRATEGY
@@ -23,5 +23,5 @@
 
 
 //runtime
-#define GMAX		1000
+#define GMAX		2000
 //#define FES			100000

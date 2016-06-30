@@ -22,7 +22,7 @@ public:
 	void Reproduct();
 	void AddIntoNetwork(vector<Individual*>& population);//dynamic
 	void RemovefromNetwork(Individual* individual);
-	void ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population);
+	void ReplaceinNetwork(vector<Individual*> population, vector<Individual*> next_population, vector<Individual*> total_population);
 	void Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population);
 	void Free(vector<Individual*> population);
 	void Free(vector<Individual*>::iterator begin, vector<Individual*>::iterator end);

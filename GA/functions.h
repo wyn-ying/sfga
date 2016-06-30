@@ -21,4 +21,7 @@ private:
 	double Ras(double x[DIM]);
 	double Ackley(double x[DIM]);
 	double Rosenbrock(double x[DIM]);
+	double Sphere(double x[DIM]);
+	double Schwefel_P2_22(double x[DIM]);
+	double QuaticNoise(double x[DIM]);
 };

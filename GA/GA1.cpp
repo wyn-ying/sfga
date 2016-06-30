@@ -39,7 +39,7 @@ void GA1::Run()
 		if (!(g%10))
 		{
 			*output << gbest->funcVal << ",";
-			cout << g << "\t";
+			//cout << g << "\t";
 		}
 	}
 	*output << gbest->funcVal << endl;
@@ -138,99 +138,123 @@ void GA1::Mutate(unsigned long int genotype[DIM])
 	}
 }
 
-//select POPUSIZE individuals in POPUSIZE+CHILDSIZE individuals
-//use heap to implement a top K algorithm with O(N  *logK)
 void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &population)	//
 {
-//	vector<Individual*> next_population = population, dead_population, child_dead_population;
-//	make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
-//	for (vector<Individual*>::iterator child = childPopulation.begin(); child != childPopulation.end(); child++)
-//	{
-//		if ((*child)->funcVal < next_population[0]->funcVal)
-//		{
-//#ifdef _SCALE_FREE_DYNAMIC
-//			RemovefromNetwork(next_population[0]);
-//			//delete next_population[0];	////////!!!!!!!!
-//#endif
-//#ifdef _SCALE_FREE_STATIC
-//			if (next_population[0]->isparent)
-//			{
-//				dead_population.push_back(next_population[0]);
-//			}
-//#endif
-//			next_population[0] = *child;
-//			make_heap(next_population.begin(), next_population.end(), CmpWithFitness());
-//		}
-//		else
-//		{
-//			child_dead_population.push_back(*child);
-//		}
-//	}
-//#ifdef _SCALE_FREE_DYNAMIC
-//	AddIntoNetwork(next_population);////////���ھӵı仯������������
-//#endif
-//#ifdef _SCALE_FREE_STATIC
-//	ReplaceinNetwork(next_population, dead_population);
-//#endif
-//	population = next_population;
-//	Free(child_dead_population);
-	vector<Individual*> next_population = population;
-	next_population.insert(next_population.end(), childPopulation.begin(), childPopulation.end());
-	sort(next_population.begin(), next_population.end(), CmpWithFitness());
+	vector<Individual*> total_population = population;
+	vector<Individual*> next_population;
+	total_population.insert(total_population.end(), childPopulation.begin(), childPopulation.end());
+	sort(total_population.begin(), total_population.end(), CmpWithFitness());
 
-	vector<Individual*>::iterator it = next_population.begin();
+	vector<Individual*>::iterator it = total_population.begin();
 	//wheel
 	int fit = 1;
 	Individual* s = nullptr;
-	population.clear();
-	population.push_back(new Individual(func, next_population[0]->genotype));
-	population[0]->fitness = fit++;
-	next_population[0]->first_flag = false;
+	next_population.push_back(new Individual(func, total_population[0]));
+	next_population[0]->fitness = fit++;
+	total_population[0]->first_flag = false;
 	it++;
-	for (; it != next_population.end(); it++)
+	for (; it != total_population.end(); it++)
 	{
 		(*it)->fitness = 1 / sqrt(fit++);
 		(*it)->first_flag = true;
 	}
-	for (int i = 0; i < POPUSIZE; i++)
+	for (int i = 1; i < POPUSIZE; i++)
 	{
-		s = Select(next_population);
-		population.push_back(new Individual(func, s->genotype));
+		s = Select(total_population);
+		next_population.push_back(new Individual(func, s));
+#ifdef _SCALE_FREE_STATIC
+		if (!(s->first_flag))
+		{	
+			(*(next_population.end() - 1))->isparent = false;
+		}
+		s->first_flag = false;
+#endif
 	}
-
-	Free(next_population);
+#ifdef _SCALE_FREE_STATIC
+	ReplaceinNetwork(population, next_population, total_population);
+#endif
+	population = next_population;
+	Free(total_population);//all that flag==true
 }
 
-void GA1::ReplaceinNetwork(vector<Individual*> next_population, vector<Individual*> dead_population)
+void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> next_population, vector<Individual*> total_population)
 {
-
-#ifdef _WITH_FITNESS_STRATEGY
-	//TODO: 2 sort(s) when coding fitness version
-	sort(dead_population.begin(), dead_population.end(), CmpWithDegree());	//larger degree is at front
-	sort(next_population.begin(), next_population.end(), CmpWithFitness());	//lower fitness is at front
-#endif
-
-	vector<Individual*>::iterator dead_individual = dead_population.begin();
-	for (vector<Individual*>::iterator child = next_population.begin(); child != next_population.end(); child++)
+	Individual* old_i = nullptr;
+	//rebuild the edges of parents
+	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
 	{
-		if (!(*child)->isparent)
+		if ((*i)->isparent)
 		{
-			for (vector<Individual*>::iterator nbr = (*dead_individual)->neighbor.begin(); nbr != (*dead_individual)->neighbor.end(); nbr++)
+			old_i = (*i)->copy;
+			for (vector<Individual*>::iterator nbr = old_i->neighbor.begin(); nbr != old_i->neighbor.end(); nbr++)
 			{
 				for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
 				{
-					if ((*nbrOfNbr) == (*dead_individual))
+					if ((*nbrOfNbr) == old_i)
 					{
-						(*child)->neighbor.push_back((*nbr));
-						(*nbrOfNbr) = (*child);
+						(*i)->neighbor.push_back((*nbr));
+						(*nbrOfNbr) = (*i);
 						break;
 					}
 				}
 			}
-			dead_individual++;
 		}
 	}
-	Free(dead_population);
+#ifdef _WITH_FITNESS_STRATEGY
+	sort(next_population.begin(), next_population.end(), CmpWithFitness());
+#endif
+	vector<Individual*>::iterator next_it = next_population.begin();
+	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
+	{
+		if ((*i)->first_flag)//this parent is not chosen into next_population
+		{
+			while ((*next_it)->isparent)
+			{
+				next_it++;
+			}
+			for (vector<Individual*>::iterator nbr = (*i)->neighbor.begin(); nbr != (*i)->neighbor.end(); nbr++)
+			{
+				for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+				{
+					if ((*nbrOfNbr) == (*i))
+					{
+						(*next_it)->neighbor.push_back((*nbr));
+						(*nbrOfNbr) = (*next_it);
+						break;
+					}
+				}
+			}
+			next_it++;
+		}
+	}
+//
+//#ifdef _WITH_FITNESS_STRATEGY
+//	//TODO: 2 sort(s) when coding fitness version
+//	sort(dead_population.begin(), dead_population.end(), CmpWithDegree());	//larger degree is at front
+//	sort(next_population.begin(), next_population.end(), CmpWithFitness());	//lower fitness is at front
+//#endif
+//
+//	vector<Individual*>::iterator dead_individual = dead_population.begin();
+//	for (vector<Individual*>::iterator child = next_population.begin(); child != next_population.end(); child++)
+//	{
+//		if (!(*child)->isparent)
+//		{
+//			for (vector<Individual*>::iterator nbr = (*dead_individual)->neighbor.begin(); nbr != (*dead_individual)->neighbor.end(); nbr++)
+//			{
+//				for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+//				{
+//					if ((*nbrOfNbr) == (*dead_individual))
+//					{
+//						(*child)->neighbor.push_back((*nbr));
+//						(*nbrOfNbr) = (*child);
+//						break;
+//					}
+//				}
+//			}
+//			dead_individual++;
+//		}
+//	}
+//	Free(dead_population);
 }
 
 void GA1::AddIntoNetwork(vector<Individual*>& population)//dynamic
