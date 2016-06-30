@@ -62,29 +62,18 @@ void GA1::Reproduct()
 	for (int i = 0; i < POPUSIZE; i++)
 	{
 		parent1 = population[i];
-		if (parent1->neighbor.size() == 0)
+		parent2 = population[i]->neighbor[rand()%population[i]->neighbor.size()];
+		if (rand() < RAND_MAX*P_CROSS)
 		{
-			memcpy(child1, parent1->genotype, sizeof(unsigned long int)*DIM);
-			memcpy(child2, parent1->genotype, sizeof(unsigned long int)*DIM);
-			Mutate(child1);
-			Mutate(child2);
+			Cross(parent1->genotype, parent2->genotype, child1, child2);
 		}
 		else
 		{
-			parent2 = population[i]->neighbor[rand() % population[i]->neighbor.size()];
-			if (rand() < RAND_MAX*P_CROSS)
-			{
-				Cross(parent1->genotype, parent2->genotype, child1, child2);
-			}
-			else
-			{
-				memcpy(child1, parent1->genotype, sizeof(unsigned long int)*DIM);
-				memcpy(child2, parent2->genotype, sizeof(unsigned long int)*DIM);
-				Mutate(child1);
-				Mutate(child2);
-			}
+			memcpy(child1, parent1->genotype, sizeof(unsigned long int)*DIM);
+			memcpy(child2, parent2->genotype, sizeof(unsigned long int)*DIM);
+			Mutate(child1);
+			Mutate(child2);
 		}
-		
 		childPopulation.push_back(new Individual(func, child1));
 		childPopulation.push_back(new Individual(func, child2));
 	}
@@ -162,38 +151,33 @@ void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 	Individual* s = nullptr;
 	next_population.push_back(new Individual(func, total_population[0]));
 	next_population[0]->fitness = fit++;
-	total_population[0]->is_chosen = true;
+	total_population[0]->first_flag = false;
 	it++;
 	for (; it != total_population.end(); it++)
 	{
 		(*it)->fitness = 1 / sqrt(fit++);
-		(*it)->is_chosen = false;
+		(*it)->first_flag = true;
 	}
 	for (int i = 1; i < POPUSIZE; i++)
 	{
 		s = Select(total_population);
 		next_population.push_back(new Individual(func, s));
-#ifndef _SCALE_FREE_ONE
-		if (s->is_chosen)
+#ifdef _SCALE_FREE_STATIC
+		if (!(s->first_flag))
 		{	
-			//the new individual will be marked as parent only if it is the first time to be chosen
 			(*(next_population.end() - 1))->isparent = false;
 		}
-		s->is_chosen = true;
+		s->first_flag = false;
 #endif
 	}
 #ifdef _SCALE_FREE_STATIC
-	ReplaceinNetwork(population, next_population);
+	ReplaceinNetwork(population, next_population, total_population);
 #endif
-#ifdef _SCALE_FREE_DYNAMIC
-	RebuildNetwork(population, next_population);
-#endif
-
 	population = next_population;
 	Free(total_population);//all that flag==true
 }
 
-void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> next_population)
+void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> next_population, vector<Individual*> total_population)
 {
 	Individual* old_i = nullptr;
 	//rebuild the edges of parents
@@ -209,7 +193,7 @@ void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> n
 					if ((*nbrOfNbr) == old_i)
 					{
 						(*i)->neighbor.push_back((*nbr));
-/**/						(*nbrOfNbr) = (*i);
+						(*nbrOfNbr) = (*i);
 						break;
 					}
 				}
@@ -219,11 +203,10 @@ void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> n
 #ifdef _WITH_FITNESS_STRATEGY
 	sort(next_population.begin(), next_population.end(), CmpWithFitness());
 #endif
-
 	vector<Individual*>::iterator next_it = next_population.begin();
 	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 	{
-		if (!((*i)->is_chosen))
+		if ((*i)->first_flag)//this parent is not chosen into next_population
 		{
 			while ((*next_it)->isparent)
 			{
@@ -244,185 +227,81 @@ void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> n
 			next_it++;
 		}
 	}
+//
+//#ifdef _WITH_FITNESS_STRATEGY
+//	//TODO: 2 sort(s) when coding fitness version
+//	sort(dead_population.begin(), dead_population.end(), CmpWithDegree());	//larger degree is at front
+//	sort(next_population.begin(), next_population.end(), CmpWithFitness());	//lower fitness is at front
+//#endif
+//
+//	vector<Individual*>::iterator dead_individual = dead_population.begin();
+//	for (vector<Individual*>::iterator child = next_population.begin(); child != next_population.end(); child++)
+//	{
+//		if (!(*child)->isparent)
+//		{
+//			for (vector<Individual*>::iterator nbr = (*dead_individual)->neighbor.begin(); nbr != (*dead_individual)->neighbor.end(); nbr++)
+//			{
+//				for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+//				{
+//					if ((*nbrOfNbr) == (*dead_individual))
+//					{
+//						(*child)->neighbor.push_back((*nbr));
+//						(*nbrOfNbr) = (*child);
+//						break;
+//					}
+//				}
+//			}
+//			dead_individual++;
+//		}
+//	}
+//	Free(dead_population);
 }
 
-void GA1::RebuildNetwork(vector<Individual*> population, vector<Individual*> next_population)//dynamic, average edges for newborn
+void GA1::AddIntoNetwork(vector<Individual*>& population)//dynamic
 {
-	Individual* old_i = nullptr;
-	vector<Individual*> existing_population;
-	//map<vector<Individual*>::iterator, int> edge_number;
-	int exist_edge_number = 0, child_number = 0, edge_for_child_i = 0;
-	//rebuild the edges of parents
-	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
+	map<vector<Individual*>::iterator, int> degree, fitRank, linkProb, linkProbTmp;
+	int sumProb = 0, sumProbTmp;
+	////worst is at front ??
+	sort(population.begin(), population.end(), CmpWithFitness());//lower fitness is at front
+	int fitRankCnt = 1, rnd_l, sumProbCnt;
+	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
 	{
 		if ((*i)->isparent)
 		{
-			old_i = (*i)->copy;
-			for (vector<Individual*>::iterator nbr = old_i->neighbor.begin(); nbr != old_i->neighbor.end(); nbr++)
+			degree.insert(pair<vector<Individual*>::iterator, int>(i, (*i)->neighbor.size() + 1));
+			fitRank.insert(pair<vector<Individual*>::iterator, int>(i, fitRankCnt++));
+			linkProb.insert(pair<vector<Individual*>::iterator, int>(i, degree[i] + fitRank[i]));
+			sumProb += linkProb[i];
+		}
+	}
+	for (vector<Individual*>::iterator child = population.begin(); child != population.end(); child++)
+	{
+		if (!(*child)->isparent)
+		{
+			linkProbTmp = linkProb;
+			sumProbTmp = sumProb;
+			for (int l = 0; l < M; l++)//TODO: the added edges equals the edges of remove individual
 			{
-				if ((*nbr)->is_chosen)
+				sumProbCnt = 0;
+				rnd_l = rand() % sumProbTmp;
+				for (vector<Individual*>::iterator parent = population.begin(); parent != population.end(); parent++)
 				{
-					for (vector<Individual*>::iterator nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+					if ((*parent)->isparent)
 					{
-						if ((*nbrOfNbr) == old_i)
+						sumProbCnt += linkProbTmp[parent];
+						if (rnd_l < sumProbCnt)
 						{
-							for (vector<Individual*>::iterator new_nbr = next_population.begin(); new_nbr != next_population.end(); new_nbr++)
-							{
-								if ((*new_nbr)->copy == (*nbr))
-								{
-									(*i)->neighbor.push_back((*new_nbr));
-									break;
-								}
-							}
+							sumProbTmp -= linkProbTmp[parent];
+							linkProbTmp[parent] = 0;
+							(*child)->neighbor.push_back((*parent));
+							(*parent)->neighbor.push_back((*child));
 							break;
 						}
 					}
 				}
-				
-			}
-			existing_population.push_back((*i));
-			exist_edge_number += (*i)->neighbor.size();
-		}
-		else
-		{
-			child_number++;
-		}
-	}
-	int total_edge_number_require = 0;
-	for (vector<Individual*>::iterator i = population.begin(); i != population.end(); i++)
-	{
-		total_edge_number_require += (*i)->neighbor.size();
-	}
-	total_edge_number_require = (total_edge_number_require - exist_edge_number) / 2;
-	//average
-	vector<Individual*>::iterator it = population.begin();	//'it' is no use in average version
-	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
-	{
-		if (!((*i)->isparent))
-		{
-			while ((*it)->is_chosen)
-			{
-				it++;
-			}
-			edge_for_child_i = total_edge_number_require / child_number +
-							  (total_edge_number_require % child_number > 0 ? 1 : 0);
-			if (existing_population.size() <= edge_for_child_i)
-			{
-				for (vector<Individual*>::iterator j = existing_population.begin(); j != existing_population.end(); j++)
-				{
-					(*i)->neighbor.push_back((*j));
-					(*j)->neighbor.push_back((*i));
-					total_edge_number_require--;
-				}
-			}
-			else
-			{
-				//deal with link matter
-				total_edge_number_require -= edge_for_child_i;
-				AddIntoNetwork(existing_population, *i, edge_for_child_i);
-			}
-			existing_population.push_back((*i));
-			child_number--;
-			it++;
-		}
-	}
-/*	int remainer_number = total_edge_number_require % child_number, remainer_number_tmp = 0;
-	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
-	{
-		if (!((*i)->isparent))
-		{
-			edge_number[i] = total_edge_number_require / child_number;
-		}
-	}
-
-	vector<Individual*>::iterator in_remainer = next_population.begin();
-	for (; in_remainer != next_population.end(); in_remainer++)
-	{
-		if (!((*in_remainer)->isparent))
-		{
-			if (remainer_number_tmp<remainer_number)
-			{
-				edge_number[in_remainer] += 1;
-				remainer_number_tmp++;
-			}
-			else
-			{
-				break;
 			}
 		}
 	}
-
-	vector<Individual*>::iterator it = population.begin();
-	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
-	{
-		if (!((*i)->isparent))
-		{
-			while ((*it)->is_chosen)
-			{
-				it++;
-			}
-			if (existing_population.size()<=edge_number[i])
-			{
-				for (vector<Individual*>::iterator j = existing_population.begin(); j != existing_population.end(); j++)
-				{
-					(*i)->neighbor.push_back((*j));
-					(*j)->neighbor.push_back((*i));
-				}
-				//the rest links are added into other offsprings
-				for (int dif = edge_number[i]; dif > existing_population.size(); dif--)
-				{
-					//TODO:if in_remainer goes to end but the 'dif' loop is not return, then some edges will be lost
-					while (in_remainer != next_population.end() && (*in_remainer)->isparent)
-					{
-						in_remainer++;
-					}
-					if (in_remainer != next_population.end())
-					{
-						edge_number[in_remainer] += 1;
-						in_remainer++;
-					}
-				}
-			}
-			else
-			{
-				//deal with link matter
-				AddIntoNetwork(existing_population, *i, edge_number[i]);
-			}
-			existing_population.push_back((*i));
-			it++;
-		}
-	}*/
-}
-void GA1::AddIntoNetwork(vector<Individual*> exist_population, Individual* individual, int edge_number)//dynamic
-{
-	double *fit = new double[exist_population.size()], fit_n = 1, sum = 0, tmp = 0, rnd = 0;
-	//todo:improve: only deal with the last element
-	//todo:degree version and mixed version
-	//better fitness will achieve larger probability to link
-	sort(exist_population.begin(), exist_population.end(), CmpWithFitness());//lower fitness is at front
-	for (int i = 0; i < exist_population.size(); i++)
-	{
-		fit[i] = i / sqrt(fit_n++);
-		sum += fit[i];
-	}
-	for (int l = 0; l < edge_number; l++)
-	{
-		tmp = 0;
-		rnd = (double)rand() / RAND_MAX * sum;
-		for (int i = 0; i < exist_population.size(); i++)
-		{
-			tmp += fit[i];
-			if (tmp>rnd)
-			{
-				individual->neighbor.push_back(exist_population[i]);
-				exist_population[i]->neighbor.push_back(individual);
-				sum -= fit[i];
-				fit[i] = 0;
-				break;
-			}
-		}
-	}
-	delete[] fit;
 }
 
 void GA1::RemovefromNetwork(Individual* individual)//dynamic
