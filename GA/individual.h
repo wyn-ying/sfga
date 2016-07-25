@@ -13,7 +13,7 @@ public:
 	double funcVal;
 	double fitness;
 	bool isparent;
-	bool first_flag;
+	bool is_chosen;
 	Functions* func;
 	vector<Individual*> neighbor;
 	Individual* copy;

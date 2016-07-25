@@ -8,15 +8,15 @@
 
 
 //Network
-#define M0			100
+#define M0			4
 #define M			4
 #define P_STRATEGY	0.5
 #define _TOPO_STRATEGY
 
 
 //strategy
-#define _SCALE_FREE_ONE
-//#define _SCALE_FREE_DYNAMIC
+//#define _SCALE_FREE_ONE
+#define _SCALE_FREE_DYNAMIC
 //#define _SCALE_FREE_STATIC
 
 //#define _WITH_FITNESS_STRATEGY
