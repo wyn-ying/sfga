@@ -16,7 +16,7 @@ public:
 	Individual* gbest;
 	ofstream* output;
 public:
-	GA1(int func_idx);
+	GA1(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b);
 	void Init();
 	void Run();
 	void Reproduct();
@@ -39,6 +39,6 @@ private:
 		bool operator()(Individual* i1, Individual* i2) { return i1->neighbor.size() > i2->neighbor.size(); };
 	};
 	Individual* GA1::Select(vector<Individual*> population);
-	void Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM]);
-	void Mutate(unsigned long int genotype[DIM]);
+	void Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[DIM]);
+	void Mutate(int genotype[DIM]);
 };

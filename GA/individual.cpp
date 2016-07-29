@@ -5,9 +5,30 @@ Individual::Individual(Functions &func)
 	copy = nullptr;
 	isparent = false;
 	this->func = &func;
+	int idx[DIM];
 	for (int d = 0; d < DIM; d++)
 	{
-		phenotype[d] = (double)rand() / RAND_MAX * (this->func->UB - this->func->LB) + this->func->LB;
+		idx[d] = d;
+	}
+	RndSort(idx);
+	COST_TYPE tmp_cost = 0;
+	int d;
+	for (d = 0; d < DIM; d++)
+	{
+		phenotype[idx[d]] = rand() % 2;
+		if (phenotype[idx[d]] == 1)
+		{
+			tmp_cost += this->func->cost[idx[d]];
+			if (tmp_cost>this->func->sum_cost)
+			{
+				phenotype[idx[d]] = 0;
+				break;
+			}
+		}
+	}
+	for (; d < DIM; d++)
+	{
+		phenotype[idx[d]] = 0;
 	}
 	Encode();
 	Fit();
@@ -24,7 +45,7 @@ Individual::Individual(Functions &func, double phenotype[DIM])
 	Encode();
 	Fit();
 }
-Individual::Individual(Functions &func, unsigned long int genotype[DIM])
+Individual::Individual(Functions &func, int genotype[DIM])
 {
 	copy = nullptr;
 	isparent = false;
@@ -53,14 +74,14 @@ void Individual::Encode()
 {
 	for (int d = 0; d < DIM; d++)
 	{
-		genotype[d] = unsigned long((phenotype[d] - func->LB) / (func->UB - func->LB) * 0xffffffff);
+		genotype[d] = phenotype[d];
 	}
 }
 void Individual::Decode()
 {
 	for (int d = 0; d < DIM; d++)
 	{
-		phenotype[d] = (double)genotype[d] / 0xffffffff * (func->UB - func->LB) + func->LB;
+		phenotype[d] = genotype[d];
 	}
 }
 Individual::~Individual()

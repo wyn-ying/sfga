@@ -6,6 +6,20 @@ Functions::Functions()
 	this->idx = 1;
 	LB = -5.12; UB = 5.12;
 }
+Functions::Functions(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b)
+{
+	this->b = b;
+	this->sum_cost = sum_cost;
+	for (int i = 0; i < DIM; i++)
+	{
+		this->cost[i] = cost[i];
+		for (int j = 0; j < DIM; j++)
+		{
+			this->G[i][j] = G[i][j];
+		}
+	}
+}
+
 Functions::Functions(int index)
 {
 	this->idx = index;
@@ -50,6 +64,31 @@ double Functions::F(double x[DIM])
 	default:
 		return 0;break;
 	}
+}
+
+int Functions::F(int x[DIM])
+{
+	int G[DIM][DIM];
+	int lagest_component_size;
+ 	for (int i = 0; i < DIM; i++)
+		for (int j = 0; j < DIM; j++)
+			G[i][j] = this->G[i][j];
+	Node node[DIM];
+	net::SetNetwork(node, G);	//TODO:初始化的时候也可以做点优化，G拷贝的时候可以memcpy，node初始化的时候可以用一组原始的node[DIM]拷贝，这样就可以把第一次的Setnetwork省略掉
+	int idx[DIM];
+	int idx_num = 0;
+	for (int i = 0; i < DIM; i++)
+	{
+		if (x[i] == 1)
+		{
+			idx[idx_num] = i;
+			idx_num += 1;
+		}
+	}
+	cascading(node, G, cost, sum_cost, idx, idx_num, b);
+	net::SetNetwork(node, G);
+	lagest_component_size = net::Connectivity(node);
+	return lagest_component_size;
 }
 
 double Functions::Griewank(double x[DIM])
@@ -129,4 +168,26 @@ double Functions::QuaticNoise(double x[DIM])
 	}
 	f = f + (double)rand()/RAND_MAX;
 	return f;
+}
+void RndSort(int index[DIM])
+{
+	int tmp, rnd;
+	for (int i = 0; i < DIM - 1; i++)
+	{
+		rnd = rand() % (DIM - i);
+		tmp = index[i + rnd];
+		index[i + rnd] = index[i];
+		index[i] = tmp;
+	}
+}
+void RndSort(int index[DIM], int num)
+{
+	int tmp, rnd;
+	for (int i = 0; i < num - 1; i++)
+	{
+		rnd = rand() % (num - i);
+		tmp = index[i + rnd];
+		index[i + rnd] = index[i];
+		index[i] = tmp;
+	}
 }

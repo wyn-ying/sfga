@@ -3,9 +3,9 @@
 #include<iostream>
 using namespace std;
 
-GA1::GA1(int func_idx)
+GA1::GA1(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b)
 {
-	func = *new Functions(func_idx);
+	func = *new Functions(G, cost, sum_cost, b);
 }
 
 void GA1::Init()
@@ -24,6 +24,7 @@ void GA1::Run()
 	Init();
 	for (int g = 0; g < GMAX; g++)
 	{
+		cout << "Now g=" << g << ", ";
 		Reproduct();
 #ifdef _SCALE_FREE_ONE
 		ResetNetwork(population);
@@ -41,6 +42,7 @@ void GA1::Run()
 			*output << gbest->funcVal << ",";
 			//cout << g << "\t";
 		}
+		cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
 	*output << gbest->funcVal << endl;
 	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
@@ -50,7 +52,7 @@ void GA1::Run()
 void GA1::Reproduct()
 {
 	vector<Individual*> childPopulation;
-	unsigned long int child1[DIM], child2[DIM];
+	int child1[DIM], child2[DIM];
 	Individual* parent1;
 	Individual* parent2;
 
@@ -107,13 +109,13 @@ Individual* GA1::Select(vector<Individual*> population)
 	}
 	return population[population.size()-1];
 }
-void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], unsigned long int child1[DIM], unsigned long int child2[DIM])
+void GA1::Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[DIM])	
 {
-	int dptr, bptr;
-	unsigned long int tmp;
+	int dptr;
+	int idx1[DIM], idx2[DIM], idx1_num = 0, idx2_num = 0;
+	COST_TYPE sum1 = 0, sum2 = 0;
 	//Crossover
 	dptr = rand() % DIM;
-	bptr = rand() % (sizeof(unsigned long int) * 8);
 	//cross the first [dptr] genes while the copy rest genes except the [dptr]th gene
 	for (int d = 0; d < dptr; d++)
 	{
@@ -125,27 +127,63 @@ void GA1::Cross(unsigned long int parent1[DIM], unsigned long int parent2[DIM], 
 		child1[d] = parent1[d];
 		child2[d] = parent2[d];
 	}
-	//cross the first [bptr] bits of the [dptr]th gene
-	tmp = 0xffffffff << bptr;
-	tmp &= child1[dptr] ^ child2[dptr];
-	child1[dptr] ^= tmp;
-	child2[dptr] ^= tmp;
-}
-void GA1::Mutate(unsigned long int genotype[DIM])
-{
-	int mut_tmp;
 	for (int d = 0; d < DIM; d++)
 	{
-		mut_tmp = 0;
-		for (int i = 0; i < sizeof(unsigned long int) * 8; i++)
+		if (child1[d] == 1)
 		{
-			mut_tmp <<= 1;
-			if (rand()<P_MUTATE*RAND_MAX)
-			{
-				mut_tmp += 1;
-			}
+			idx1[idx1_num++] = d;
+			sum1 += func.cost[d];
 		}
-		genotype[d] ^= mut_tmp;
+		if (child2[d] == 1)
+		{
+			idx2[idx2_num++] = d;
+			sum2 += func.cost[d];
+		}
+	}
+	//交叉后解不可行怎么办
+	int id, tmp;
+	while (sum1 > func.sum_cost)
+	{
+		id = idx1[rand() % idx1_num];
+		child1[id] = 0;
+		sum1 -= func.cost[id];
+		tmp = idx1[id]; idx1[id] = idx1[idx1_num - 1]; idx1[idx1_num - 1] = tmp;
+		idx1_num--;
+	}
+	while (sum2 > func.sum_cost)
+	{
+		id = idx2[rand() % idx2_num];
+		child2[id] = 0;
+		sum2 -= func.cost[id];
+		tmp = idx2[id]; idx2[id] = idx2[idx2_num - 1]; idx2[idx2_num - 1] = tmp;
+		idx2_num--;
+	}
+}
+
+void GA1::Mutate(int genotype[DIM])
+{
+	int idx[DIM], idx_num = 0;
+	COST_TYPE sum = 0;
+	for (int d = 0; d < DIM; d++)
+	{
+		if (rand() < P_MUTATE*RAND_MAX)
+		{
+			genotype[d] = 1 - genotype[d];
+		}
+		if (genotype[d] == 1)
+		{
+			idx[idx_num++] = d;
+			sum += func.cost[d];
+		}
+	}
+	//变异后解不可行怎么办
+	int id, tmp;
+	while (sum > func.sum_cost)
+	{
+		id = idx[rand() % idx_num];
+		sum -= func.cost[id];
+		tmp = idx[id]; idx[id] = idx[idx_num - 1]; idx[idx_num - 1] = tmp;
+		idx_num--;
 	}
 }
 

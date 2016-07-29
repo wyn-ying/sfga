@@ -3,6 +3,7 @@
 #include "individual.h"
 #include <algorithm>
 void ResetNetwork(vector<Individual*>& population);
+void FullyConnectedNetwork(vector<Individual*>& population);
 void SetNetwork(vector<Individual*>& individual);
 class Cmp
 {

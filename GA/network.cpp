@@ -31,12 +31,49 @@ void ResetNetwork(vector<Individual*>& population)
 			}
 		}
 	}
-//#ifdef _WITH_FITNESS_STRATEGY
-//	for (int i = 0; i < POPUSIZE - 1; i++)
-//	{
-//		swap(population[i], population[rand() % (POPUSIZE - 1 - i) + i + 1]);
-//	}
-//#endif
+	//#ifdef _WITH_FITNESS_STRATEGY
+	//	for (int i = 0; i < POPUSIZE - 1; i++)
+	//	{
+	//		swap(population[i], population[rand() % (POPUSIZE - 1 - i) + i + 1]);
+	//	}
+	//#endif
+}
+
+void FullyConnectedNetwork(vector<Individual*>& population)
+{
+	int G[POPUSIZE][POPUSIZE];
+	//ScaleFreeNetwork
+	for (int i = 0; i < POPUSIZE; i++)
+	{
+		for (int j = 0; j < POPUSIZE; j++)
+		{
+			if (i == j)
+			{
+				G[i][j] = 0;
+			}
+			else
+			{
+				G[i][j] = 1;
+			}
+		}
+	}
+	for (int i = 0; i < POPUSIZE; i++)
+	{
+		population[i]->neighbor.clear();
+		for (int j = 0; j < POPUSIZE; j++)
+		{
+			if (G[i][j])
+			{
+				population[i]->neighbor.push_back(population[j]);
+			}
+		}
+	}
+	//#ifdef _WITH_FITNESS_STRATEGY
+	//	for (int i = 0; i < POPUSIZE - 1; i++)
+	//	{
+	//		swap(population[i], population[rand() % (POPUSIZE - 1 - i) + i + 1]);
+	//	}
+	//#endif
 }
 
 void SetNetByBA(int G[POPUSIZE][POPUSIZE])

@@ -39,13 +39,10 @@
     <ClInclude Include="GA1.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GA2.h">
+    <ClInclude Include="cascading.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="GA3.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SGA.h">
+    <ClInclude Include="netnode.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,13 +65,10 @@
     <ClCompile Include="GA1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="GA2.cpp">
+    <ClCompile Include="cascading.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="GA3.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SGA.cpp">
+    <ClCompile Include="netnode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
