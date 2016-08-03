@@ -12,8 +12,9 @@ public:
 	int degree;
 	int Q;
 	int LC;
-	COST_TYPE Ci;
-	COST_TYPE Cm;
+	COST_TYPE cost;
+	double Ci;
+	double Cm;
 	vector<Node*> neighbor;
 	vector<Node*> tao;
 	int componentID;

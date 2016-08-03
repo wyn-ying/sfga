@@ -3,16 +3,23 @@
 #include<iostream>
 using namespace std;
 
-GA1::GA1(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b)
+GA1::GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c)
 {
-	func = *new Functions(G, cost, sum_cost, b);
+	func = *new Functions(G, sum_cost, a, b, c);
 }
 
 void GA1::Init()
 {
 	rand();
 	population.clear();
-	for (int i = 0; i < POPUSIZE; i++)
+	//TODO:large degree at front
+	int pheno[DIM];
+	LDP(pheno);
+	population.push_back(new Individual(func, pheno));
+	//TODO:small degree at front
+	SDP(pheno);
+	population.push_back(new Individual(func, pheno));
+	for (int i = 0; i < POPUSIZE-2; i++)
 	{
 		population.push_back(new Individual(func));
 	}
@@ -39,12 +46,51 @@ void GA1::Run()
 		}
 		if (!(g%10))
 		{
+			int idx[DIM], num = 0;
+			COST_TYPE sum = 0;
+			for (int i = 0; i < DIM; i++)
+			{
+				idx[i] = 0;
+			}
+			for (int i = 0; i < DIM; i++)
+			{
+				if (gbest->phenotype[i] == 1)
+				{
+					idx[num++] = i;
+				}
+			}
+			/*cout << "The combo to attack is: " << endl;
+			for (int i = 0; i < num; i++)
+			{
+				cout << idx[i] << "  cost: " << func.node[idx[i]].cost << endl;
+				sum += func.node[idx[i]].cost;
+			}
+			cout << "The total cost is: " << sum << endl;*/
 			*output << gbest->funcVal << ",";
+			if (gbest->funcVal == 1)
+			{
+				for (;g < GMAX; g++)
+				{
+					if (!(g % 10))
+					{
+						*output << gbest->funcVal << ",";
+					}
+				}
+				break;
+			}
 			//cout << g << "\t";
 		}
 		cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
-	*output << gbest->funcVal << endl;
+	*output << gbest->funcVal << ",";
+	for (int i = 0; i < DIM; i++)
+	{
+		if (gbest->phenotype[i] == 1)
+		{
+			*output << "," << i;
+		}
+	}
+	*output << endl;
 	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
 	Free(population);
 }
@@ -132,29 +178,29 @@ void GA1::Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[
 		if (child1[d] == 1)
 		{
 			idx1[idx1_num++] = d;
-			sum1 += func.cost[d];
+			sum1 += func.node[d].cost;
 		}
 		if (child2[d] == 1)
 		{
 			idx2[idx2_num++] = d;
-			sum2 += func.cost[d];
+			sum2 += func.node[d].cost;
 		}
 	}
 	//交叉后解不可行怎么办
 	int id, tmp;
 	while (sum1 > func.sum_cost)
 	{
-		id = idx1[rand() % idx1_num];
-		child1[id] = 0;
-		sum1 -= func.cost[id];
+		id = rand() % idx1_num;
+		child1[idx1[id]] = 0;
+		sum1 -= func.node[idx1[id]].cost;
 		tmp = idx1[id]; idx1[id] = idx1[idx1_num - 1]; idx1[idx1_num - 1] = tmp;
 		idx1_num--;
 	}
 	while (sum2 > func.sum_cost)
 	{
-		id = idx2[rand() % idx2_num];
-		child2[id] = 0;
-		sum2 -= func.cost[id];
+		id = rand() % idx2_num;
+		child2[idx2[id]] = 0;
+		sum2 -= func.node[idx2[id]].cost;
 		tmp = idx2[id]; idx2[id] = idx2[idx2_num - 1]; idx2[idx2_num - 1] = tmp;
 		idx2_num--;
 	}
@@ -173,15 +219,16 @@ void GA1::Mutate(int genotype[DIM])
 		if (genotype[d] == 1)
 		{
 			idx[idx_num++] = d;
-			sum += func.cost[d];
+			sum += func.node[d].cost;
 		}
 	}
 	//变异后解不可行怎么办
 	int id, tmp;
 	while (sum > func.sum_cost)
 	{
-		id = idx[rand() % idx_num];
-		sum -= func.cost[id];
+		id = rand() % idx_num;
+		genotype[idx[id]] = 0;
+		sum -= func.node[idx[id]].cost;
 		tmp = idx[id]; idx[id] = idx[idx_num - 1]; idx[idx_num - 1] = tmp;
 		idx_num--;
 	}
@@ -502,6 +549,68 @@ void GA1::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterato
 		{
 			delete *i;
 			*i = NULL;
+		}
+	}
+}
+
+void GA1::LDP(int pheno[DIM])
+{
+	int idx[DIM], tmp, key;
+	COST_TYPE tmp_cost;
+	tmp_cost = 0;
+	for (int i = 0; i < DIM; i++)
+	{
+		idx[i] = i;
+		pheno[i] = 0;
+	}
+	for (int i = 0; i < DIM; i++)
+	{
+		key = i;
+		for (int j = i; j < DIM; j++)
+		{
+			if (func.node[idx[j]].degree > func.node[idx[key]].degree)
+			{
+				key = j;
+			}
+		}
+		tmp = idx[i]; idx[i] = idx[key]; idx[key] = tmp;
+		tmp_cost += func.node[idx[i]].cost;
+		pheno[idx[i]] = 1;
+		if (tmp_cost > func.sum_cost)
+		{
+			pheno[idx[i]] = 0;
+			break;
+		}
+	}
+}
+
+void GA1::SDP(int pheno[DIM])
+{
+	int idx[DIM], tmp, key;
+	COST_TYPE tmp_cost;
+	tmp_cost = 0;
+	for (int i = 0; i < DIM; i++)
+	{
+		idx[i] = i;
+		pheno[i] = 0;
+	}
+	for (int i = 0; i < DIM; i++)
+	{
+		key = i;
+		for (int j = i; j < DIM; j++)
+		{
+			if (func.node[idx[j]].degree < func.node[idx[key]].degree)
+			{
+				key = j;
+			}
+		}
+		tmp = idx[i]; idx[i] = idx[key]; idx[key] = tmp;
+		tmp_cost += func.node[idx[i]].cost;
+		pheno[idx[i]] = 1;
+		if (tmp_cost > func.sum_cost)
+		{
+			pheno[idx[i]] = 0;
+			break;
 		}
 	}
 }

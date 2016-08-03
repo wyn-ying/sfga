@@ -9,6 +9,7 @@ void CopyNode(Node oldnode[DIM], Node newnode[DIM])
 		newnode[i].degree = oldnode[i].degree;
 		newnode[i].Ci = oldnode[i].Ci;
 		newnode[i].Cm = oldnode[i].Cm;
+		newnode[i].cost = oldnode[i].cost;
 		for (vector<Node*>::iterator j = oldnode[i].neighbor.begin(); j != oldnode[i].neighbor.end(); j++)
 		{
 			newnode[i].neighbor.push_back(&newnode[(*j)->ID]);
@@ -26,7 +27,7 @@ void SetCapacity(Node node[DIM], double a, double b)
 	for (int i = 0;i < DIM; i++)
 	{
 		node[i].Ci = node[i].Ci / sum;
-		node[i].Cm = node[i].Ci*(1 + b);	
+		node[i].Cm = node[i].Ci*(1 + b);
 	}
 }
 void net::SetNetwork(Node node[DIM], const int G[DIM][DIM])
@@ -47,6 +48,7 @@ void net::SetNetwork(Node node[DIM], const int G[DIM][DIM])
 	for (int i = 0; i < DIM; i++)
 	{
 		node[i].degree = node[i].neighbor.size();
+		node[i].cost = node[i].degree;
 	}
 }
 

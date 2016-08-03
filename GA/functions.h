@@ -4,24 +4,24 @@
 #include<math.h>
 #include <string>
 #include "cascading.h"
+#include "netnode.h"
 using namespace std;
 
 class Functions
 {
 public:
+	Node node[DIM];
 	double UB;
 	double LB;
 	int idx;
 	string name;
-	int G[DIM][DIM];
-	double b;
 	COST_TYPE sum_cost;
-	COST_TYPE cost[DIM];
+	double c;
 public:
 	Functions();
-	Functions(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b);
+	Functions(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);
 	Functions(int index);
-	double F(double x[DIM]);
+//	double F(double x[DIM]);
 	int F(int x[DIM]);
 private:
 	double Griewank(double x[DIM]);

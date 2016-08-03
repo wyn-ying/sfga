@@ -12,29 +12,32 @@ using namespace std;
 int main()
 {
 	srand(1);
+	rand();
 	//srand((unsigned)time(NULL));
-	double a = 1, b = 0.2;
-	for (b = 0.9; b <= 1; b += 0.1)
+	int G[DIM][DIM];
+	net::BANetworkG(G, 2, 2);
+	double a = 1.6, b = 1, c = 1, p=0.06;
+	for (a = 1; a <= 2.0; a += 0.1)
+	for (b = 0.1; b <= 2; b += 0.1)
 	{
 		stringstream txtname;
-		txtname << "power grid b=" << b << ".csv";
-		ofstream output(txtname.str());
+		txtname << "power grid a="<<a<<" b="<<b<<" p=0.06.csv";
+		ofstream output(txtname.str(),ios::app);
 		//TODO:传网络G进去，对固定的一个G进行优化，找到最好的组合
 		//TODO:算好网络中每个节点的初始cost，传给GA，GA传给func
-		int G[DIM][DIM];
-		Node node[DIM];
-		net::BANetworkG(G, 2, 2);
-		net::SetNetwork(node, G);
-		COST_TYPE sum_cost = 50;
-		COST_TYPE cost[DIM];
-		COST_TYPE sum = 0; 
+		COST_TYPE sum_cost = 0;
+		int tmp = 0;
 		for (int i = 0; i < DIM; i++)
 		{
-			cost[i] = pow(node[i].degree, a);
+			for (int j = 0; j < DIM; j++)
+			{
+				tmp += G[i][j];
+			}
 		}
-		GA1 ga(G, cost, sum_cost, b);
+		sum_cost = tmp * p;
+		GA1 ga(G, sum_cost, a, b, c);
 		ga.output = &output;
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			cout << "The " << i + 1 << " times of " << txtname.str() << "." << endl;
 			ga.Run();//test

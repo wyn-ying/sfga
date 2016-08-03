@@ -82,18 +82,21 @@ void cascading(Node node[DIM], int G[DIM][DIM], const COST_TYPE cost[DIM], const
 	}
 }
 
-void cascading(Node node[DIM], int index[], int num)
+void cascading(Node node[DIM], int index[], int num, double c)
 {
 	int flag = 0;
 	vector<Node*>::iterator nbr;
 	vector<Node*>::iterator nbrOfNbr;
-
+	COST_TYPE assign_sum = 0;
 	for (int i = 0; i < num; i++)
 	{
-
 		for (nbr = node[index[i]].neighbor.begin(); nbr != node[index[i]].neighbor.end(); nbr++)
 		{
-			(*nbr)->Ci += (node[index[i]].Ci / node[index[i]].degree);
+			assign_sum += pow((*nbr)->degree, c);
+		}
+		for (nbr = node[index[i]].neighbor.begin(); nbr != node[index[i]].neighbor.end(); nbr++)
+		{
+			(*nbr)->Ci += node[index[i]].Ci * pow((*nbr)->degree, c) / assign_sum;
 
 			for (nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
 			{
@@ -112,7 +115,7 @@ void cascading(Node node[DIM], int index[], int num)
 	}//选择N个点去除他们的连线,并且将去除节点的容量平均分给相连的节点；
 	for (int i = 0; i < DIM; i++)
 	{
-		if (node[i].Ci > node[index[i]].Cm)
+		if (node[i].Ci > node[i].Cm)
 		{
 			flag = 1;
 		}

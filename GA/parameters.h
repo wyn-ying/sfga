@@ -4,7 +4,7 @@
 #define P_MUTATE	0.1
 #define POPUSIZE	30	//125
 //#define CHILDSIZE	252	//125
-#define DIM			100	//30
+#define DIM			1000	//30
 #define COST_TYPE	double
 
 
@@ -27,3 +27,6 @@
 //runtime
 #define GMAX		100
 //#define FES			100000
+
+#define LARGE_DEGREE_P	0.2
+#define SMALL_DEGREE_P	0.2

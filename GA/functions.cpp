@@ -6,18 +6,12 @@ Functions::Functions()
 	this->idx = 1;
 	LB = -5.12; UB = 5.12;
 }
-Functions::Functions(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b)
+Functions::Functions(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c)
 {
-	this->b = b;
 	this->sum_cost = sum_cost;
-	for (int i = 0; i < DIM; i++)
-	{
-		this->cost[i] = cost[i];
-		for (int j = 0; j < DIM; j++)
-		{
-			this->G[i][j] = G[i][j];
-		}
-	}
+	net::SetNetwork(node, G);
+	SetCapacity(node, a, b);
+	this->c = c;
 }
 
 Functions::Functions(int index)
@@ -43,7 +37,7 @@ Functions::Functions(int index)
 		LB = 0; UB = 0; break;
 	}
 }
-double Functions::F(double x[DIM])
+/*double Functions::F(double x[DIM])
 {
 	switch (idx)
 	{
@@ -64,17 +58,14 @@ double Functions::F(double x[DIM])
 	default:
 		return 0;break;
 	}
-}
+}*/
 
 int Functions::F(int x[DIM])
 {
 	int G[DIM][DIM];
 	int lagest_component_size;
- 	for (int i = 0; i < DIM; i++)
-		for (int j = 0; j < DIM; j++)
-			G[i][j] = this->G[i][j];
 	Node node[DIM];
-	net::SetNetwork(node, G);	//TODO:初始化的时候也可以做点优化，G拷贝的时候可以memcpy，node初始化的时候可以用一组原始的node[DIM]拷贝，这样就可以把第一次的Setnetwork省略掉
+	CopyNode(this->node, node);	//TODO:初始化的时候也可以做点优化，G拷贝的时候可以memcpy，node初始化的时候可以用一组原始的node[DIM]拷贝，这样就可以把第一次的Setnetwork省略掉
 	int idx[DIM];
 	int idx_num = 0;
 	for (int i = 0; i < DIM; i++)
@@ -85,8 +76,7 @@ int Functions::F(int x[DIM])
 			idx_num += 1;
 		}
 	}
-	cascading(node, G, cost, sum_cost, idx, idx_num, b);
-	net::SetNetwork(node, G);
+	cascading(node, idx, idx_num, c);
 	lagest_component_size = net::Connectivity(node);
 	return lagest_component_size;
 }

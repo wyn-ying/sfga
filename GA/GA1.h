@@ -16,7 +16,7 @@ public:
 	Individual* gbest;
 	ofstream* output;
 public:
-	GA1(int G[DIM][DIM], COST_TYPE cost[DIM], COST_TYPE sum_cost, double b);
+	GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);
 	void Init();
 	void Run();
 	void Reproduct();
@@ -41,4 +41,6 @@ private:
 	Individual* GA1::Select(vector<Individual*> population);
 	void Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[DIM]);
 	void Mutate(int genotype[DIM]);
+	void LDP(int phenomenon[DIM]);
+	void SDP(int phenomenon[DIM]);
 };

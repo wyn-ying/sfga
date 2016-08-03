@@ -18,11 +18,10 @@ Individual::Individual(Functions &func)
 		phenotype[idx[d]] = rand() % 2;
 		if (phenotype[idx[d]] == 1)
 		{
-			tmp_cost += this->func->cost[idx[d]];
+			tmp_cost += this->func->node[idx[d]].cost;
 			if (tmp_cost>this->func->sum_cost)
 			{
 				phenotype[idx[d]] = 0;
-				break;
 			}
 		}
 	}
