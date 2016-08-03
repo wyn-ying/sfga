@@ -2,7 +2,7 @@
 #include <math.h>
 #include "cascading.h"
 
-void cascading(Node node[DIM], int G[DIM][DIM], const COST_TYPE cost[DIM], const COST_TYPE sum_cost, const int index[], int num, double b)
+/*void cascading(Node node[DIM], int G[DIM][DIM], const COST_TYPE cost[DIM], const COST_TYPE sum_cost, const int index[], int num, double b)
 {
 	COST_TYPE sum = 0;
 	int flag = 0;
@@ -80,7 +80,7 @@ void cascading(Node node[DIM], int G[DIM][DIM], const COST_TYPE cost[DIM], const
 			}
 		}
 	}
-}
+}*/
 
 void cascading(Node node[DIM], int index[], int num, double c)
 {

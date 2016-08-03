@@ -31,7 +31,7 @@ void GA1::Run()
 	Init();
 	for (int g = 0; g < GMAX; g++)
 	{
-		cout << "Now g=" << g << ", ";
+		//cout << "Now g=" << g << ", ";
 		Reproduct();
 #ifdef _SCALE_FREE_ONE
 		ResetNetwork(population);
@@ -69,7 +69,7 @@ void GA1::Run()
 			*output << gbest->funcVal << ",";
 			if (gbest->funcVal == 1)
 			{
-				for (;g < GMAX; g++)
+				for (g+=1;g < GMAX; g++)
 				{
 					if (!(g % 10))
 					{
@@ -80,7 +80,7 @@ void GA1::Run()
 			}
 			//cout << g << "\t";
 		}
-		cout << "funcVal of gbest is:" << gbest->funcVal << endl;
+		//cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
 	*output << gbest->funcVal << ",";
 	for (int i = 0; i < DIM; i++)
