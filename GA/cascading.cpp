@@ -132,7 +132,11 @@ void cascading(Node node[DIM], int index[], int num, double c)
 			{
 				for (nbr = node[i].neighbor.begin(); nbr != node[i].neighbor.end(); nbr++)
 				{
-					(*nbr)->Ci += (node[i].Ci / node[i].degree);
+					assign_sum += pow((*nbr)->degree, c);
+				}
+				for (nbr = node[i].neighbor.begin(); nbr != node[i].neighbor.end(); nbr++)
+				{
+					(*nbr)->Ci += node[i].Ci * pow((*nbr)->degree, c) / assign_sum;
 
 					for (nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
 					{
