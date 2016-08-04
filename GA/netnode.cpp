@@ -22,11 +22,6 @@ void SetCapacity(Node node[DIM], double a, double b)
 	for (int i = 0; i < DIM; i++)
 	{
 		node[i].Ci = pow(node[i].degree, a);
-		sum = sum + node[i].Ci;
-	}
-	for (int i = 0;i < DIM; i++)
-	{
-		node[i].Ci = node[i].Ci / sum;
 		node[i].Cm = node[i].Ci*(1 + b);
 	}
 }

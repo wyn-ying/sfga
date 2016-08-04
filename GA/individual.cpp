@@ -37,9 +37,31 @@ Individual::Individual(Functions &func, double phenotype[DIM])
 	copy = nullptr;
 	isparent = false;
 	this->func = &func;
+	int idx[DIM];
+	for (int d = 0; d < DIM; d++)
+	{
+		idx[d] = d;
+	}
+	RndSort(idx);
+	COST_TYPE tmp_cost = 0;
 	for (int d = 0; d < DIM; d++)
 	{
 		this->phenotype[d] = phenotype[d];
+		if (phenotype[d] == 1)
+		{
+			tmp_cost += this->func->node[d].cost;
+		}
+	}
+	for (int d = 0; d < DIM; d++)
+	{
+		if (phenotype[idx[d]] == 0)
+		{
+			if (tmp_cost + this->func->node[idx[d]].cost > this->func->sum_cost)
+			{
+				phenotype[idx[d]] = 1;
+				tmp_cost += this->func->node[idx[d]].cost;
+			}
+		}
 	}
 	Encode();
 	Fit();
@@ -49,9 +71,31 @@ Individual::Individual(Functions &func, int genotype[DIM])
 	copy = nullptr;
 	isparent = false;
 	this->func = &func;
+	int idx[DIM];
+	for (int d = 0; d < DIM; d++)
+	{
+		idx[d] = d;
+	}
+	RndSort(idx);
+	COST_TYPE tmp_cost = 0;
 	for (int d = 0; d < DIM; d++)
 	{
 		this->genotype[d] = genotype[d];
+		if (genotype[d] == 1)
+		{
+			tmp_cost += this->func->node[d].cost;
+		}
+	}
+	for (int d = 0; d < DIM; d++)
+	{
+		if (genotype[idx[d]] == 0)
+		{
+			if (tmp_cost + this->func->node[idx[d]].cost < this->func->sum_cost)
+			{
+				genotype[idx[d]] = 1;
+				tmp_cost += this->func->node[idx[d]].cost;
+			}
+		}
 	}
 	Decode();
 	Fit();

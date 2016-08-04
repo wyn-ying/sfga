@@ -6,8 +6,18 @@ using namespace std;
 GA1::GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c)
 {
 	func = *new Functions(G, sum_cost, a, b, c);
+	use_heuristic_flag = 0;
+
 }
 
+void GA1::HeuristicInit(int pheno_heuristic[DIM])
+{
+	use_heuristic_flag = 1;
+	for (int i = 0; i < DIM; i++)
+	{
+		this->pheno_heuristic[i] = pheno_heuristic[i];
+	}
+}
 void GA1::Init()
 {
 	rand();
@@ -19,14 +29,21 @@ void GA1::Init()
 	//TODO:small degree at front
 	SDP(pheno);
 	population.push_back(new Individual(func, pheno));
-	for (int i = 0; i < POPUSIZE-2; i++)
+	for (int i = 0; i < POPUSIZE - 2; i++)
 	{
-		population.push_back(new Individual(func));
+		if (use_heuristic_flag && rand()<RAND_MAX * HEURISTIC_P)
+		{
+			population.push_back(new Individual(func, pheno_heuristic));
+		}
+		else
+		{
+			population.push_back(new Individual(func));
+		}
 	}
 	ResetNetwork(population);
 }
 
-void GA1::Run()
+void GA1::Run(int gbest_pheno[DIM])
 {
 	Init();
 	for (int g = 0; g < GMAX; g++)
@@ -92,6 +109,15 @@ void GA1::Run()
 	}
 	*output << endl;
 	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
+
+	for (int i = 0; i < DIM; i++)
+	{
+#ifdef _USE_HEURISTIC_INIT
+		gbest_pheno[i] = gbest->phenotype[i];
+#endif
+		pheno_heuristic[i] = gbest->phenotype[i];
+	}
+
 	Free(population);
 }
 

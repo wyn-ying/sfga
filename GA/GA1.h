@@ -15,10 +15,14 @@ public:
 	vector<Individual*> population;
 	Individual* gbest;
 	ofstream* output;
+private:
+	int pheno_heuristic[DIM];
+	int use_heuristic_flag;
 public:
 	GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);
+	void HeuristicInit(int pheno_heuristic[DIM]);
 	void Init();
-	void Run();
+	void Run(int gbest_pheno[DIM]);
 	void Reproduct();
 	void AddIntoNetwork(vector<Individual*> exist_population, Individual* individual, int edge_number);//dynamic
 	void RemovefromNetwork(Individual* individual);

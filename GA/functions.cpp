@@ -62,7 +62,6 @@ Functions::Functions(int index)
 
 int Functions::F(int x[DIM])
 {
-	int G[DIM][DIM];
 	int lagest_component_size;
 	Node node[DIM];
 	CopyNode(this->node, node);	//TODO:初始化的时候也可以做点优化，G拷贝的时候可以memcpy，node初始化的时候可以用一组原始的node[DIM]拷贝，这样就可以把第一次的Setnetwork省略掉
