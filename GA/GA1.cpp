@@ -61,7 +61,7 @@ void GA1::Run(int gbest_pheno[DIM])
 				gbest = (*i);
 			}
 		}
-		if (!(g%10))
+		if (!(g % 10))
 		{
 			int idx[DIM], num = 0;
 			COST_TYPE sum = 0;
@@ -79,36 +79,36 @@ void GA1::Run(int gbest_pheno[DIM])
 			/*cout << "The combo to attack is: " << endl;
 			for (int i = 0; i < num; i++)
 			{
-				cout << idx[i] << "  cost: " << func.node[idx[i]].cost << endl;
-				sum += func.node[idx[i]].cost;
+			cout << idx[i] << "  cost: " << func.node[idx[i]].cost << endl;
+			sum += func.node[idx[i]].cost;
 			}
 			cout << "The total cost is: " << sum << endl;*/
-			*output << gbest->funcVal << ",";
+			/**output << gbest->funcVal << ",";
 			if (gbest->funcVal == 1)
 			{
-				for (g+=1;g < GMAX; g++)
-				{
-					if (!(g % 10))
-					{
-						*output << gbest->funcVal << ",";
-					}
-				}
-				break;
+			for (g+=1;g < GMAX; g++)
+			{
+			if (!(g % 10))
+			{
+			*output << gbest->funcVal << ",";
 			}
+			}
+			break;
+			}*/
 			//cout << g << "\t";
 		}
 		//cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
-	*output << gbest->funcVal << ",";
-	for (int i = 0; i < DIM; i++)
+	*output << func.original_robustness << "," << gbest->funcVal << endl;
+	/*for (int i = 0; i < DIM; i++)
 	{
-		if (gbest->phenotype[i] == 1)
-		{
-			*output << "," << i;
-		}
+	if (gbest->phenotype[i] == 1)
+	{
+	*output << "," << i;
 	}
-	*output << endl;
-	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
+	}
+	*output << endl;*/
+	cout << "origin robustness:" << func.original_robustness << ", gbest:" << gbest->funcVal << endl;
 
 	for (int i = 0; i < DIM; i++)
 	{
@@ -158,7 +158,7 @@ void GA1::Reproduct()
 				Mutate(child2);
 			}
 		}
-		
+
 		childPopulation.push_back(new Individual(func, child1));
 		childPopulation.push_back(new Individual(func, child2));
 	}
@@ -179,9 +179,9 @@ Individual* GA1::Select(vector<Individual*> population)
 		tmp_p += (*i)->fitness;
 		if (tmp_p > rnd) return *i;
 	}
-	return population[population.size()-1];
+	return population[population.size() - 1];
 }
-void GA1::Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[DIM])	
+void GA1::Cross(int parent1[DIM], int parent2[DIM], int child1[DIM], int child2[DIM])
 {
 	int dptr;
 	int idx1[DIM], idx2[DIM], idx1_num = 0, idx2_num = 0;
@@ -286,7 +286,7 @@ void GA1::Filtrate(vector<Individual*> childPopulation, vector<Individual*> &pop
 		next_population.push_back(new Individual(func, s));
 #ifndef _SCALE_FREE_ONE
 		if (s->is_chosen)
-		{	
+		{
 			//the new individual will be marked as parent only if it is the first time to be chosen
 			(*(next_population.end() - 1))->isparent = false;
 		}
@@ -320,7 +320,7 @@ void GA1::ReplaceinNetwork(vector<Individual*> population, vector<Individual*> n
 					if ((*nbrOfNbr) == old_i)
 					{
 						(*i)->neighbor.push_back((*nbr));
-/**/						(*nbrOfNbr) = (*i);
+						/**/						(*nbrOfNbr) = (*i);
 						break;
 					}
 				}
@@ -389,7 +389,7 @@ void GA1::RebuildNetwork(vector<Individual*> population, vector<Individual*> nex
 						}
 					}
 				}
-				
+
 			}
 			existing_population.push_back((*i));
 			exist_edge_number += (*i)->neighbor.size();
@@ -416,7 +416,7 @@ void GA1::RebuildNetwork(vector<Individual*> population, vector<Individual*> nex
 				it++;
 			}
 			edge_for_child_i = total_edge_number_require / child_number +
-							  (total_edge_number_require % child_number > 0 ? 1 : 0);
+				(total_edge_number_require % child_number > 0 ? 1 : 0);
 			if (existing_population.size() <= edge_for_child_i)
 			{
 				for (vector<Individual*>::iterator j = existing_population.begin(); j != existing_population.end(); j++)
@@ -437,71 +437,71 @@ void GA1::RebuildNetwork(vector<Individual*> population, vector<Individual*> nex
 			it++;
 		}
 	}
-/*	int remainer_number = total_edge_number_require % child_number, remainer_number_tmp = 0;
+	/*	int remainer_number = total_edge_number_require % child_number, remainer_number_tmp = 0;
 	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
 	{
-		if (!((*i)->isparent))
-		{
-			edge_number[i] = total_edge_number_require / child_number;
-		}
+	if (!((*i)->isparent))
+	{
+	edge_number[i] = total_edge_number_require / child_number;
+	}
 	}
 
 	vector<Individual*>::iterator in_remainer = next_population.begin();
 	for (; in_remainer != next_population.end(); in_remainer++)
 	{
-		if (!((*in_remainer)->isparent))
-		{
-			if (remainer_number_tmp<remainer_number)
-			{
-				edge_number[in_remainer] += 1;
-				remainer_number_tmp++;
-			}
-			else
-			{
-				break;
-			}
-		}
+	if (!((*in_remainer)->isparent))
+	{
+	if (remainer_number_tmp<remainer_number)
+	{
+	edge_number[in_remainer] += 1;
+	remainer_number_tmp++;
+	}
+	else
+	{
+	break;
+	}
+	}
 	}
 
 	vector<Individual*>::iterator it = population.begin();
 	for (vector<Individual*>::iterator i = next_population.begin(); i != next_population.end(); i++)
 	{
-		if (!((*i)->isparent))
-		{
-			while ((*it)->is_chosen)
-			{
-				it++;
-			}
-			if (existing_population.size()<=edge_number[i])
-			{
-				for (vector<Individual*>::iterator j = existing_population.begin(); j != existing_population.end(); j++)
-				{
-					(*i)->neighbor.push_back((*j));
-					(*j)->neighbor.push_back((*i));
-				}
-				//the rest links are added into other offsprings
-				for (int dif = edge_number[i]; dif > existing_population.size(); dif--)
-				{
-					//TODO:if in_remainer goes to end but the 'dif' loop is not return, then some edges will be lost
-					while (in_remainer != next_population.end() && (*in_remainer)->isparent)
-					{
-						in_remainer++;
-					}
-					if (in_remainer != next_population.end())
-					{
-						edge_number[in_remainer] += 1;
-						in_remainer++;
-					}
-				}
-			}
-			else
-			{
-				//deal with link matter
-				AddIntoNetwork(existing_population, *i, edge_number[i]);
-			}
-			existing_population.push_back((*i));
-			it++;
-		}
+	if (!((*i)->isparent))
+	{
+	while ((*it)->is_chosen)
+	{
+	it++;
+	}
+	if (existing_population.size()<=edge_number[i])
+	{
+	for (vector<Individual*>::iterator j = existing_population.begin(); j != existing_population.end(); j++)
+	{
+	(*i)->neighbor.push_back((*j));
+	(*j)->neighbor.push_back((*i));
+	}
+	//the rest links are added into other offsprings
+	for (int dif = edge_number[i]; dif > existing_population.size(); dif--)
+	{
+	//TODO:if in_remainer goes to end but the 'dif' loop is not return, then some edges will be lost
+	while (in_remainer != next_population.end() && (*in_remainer)->isparent)
+	{
+	in_remainer++;
+	}
+	if (in_remainer != next_population.end())
+	{
+	edge_number[in_remainer] += 1;
+	in_remainer++;
+	}
+	}
+	}
+	else
+	{
+	//deal with link matter
+	AddIntoNetwork(existing_population, *i, edge_number[i]);
+	}
+	existing_population.push_back((*i));
+	it++;
+	}
 	}*/
 }
 void GA1::AddIntoNetwork(vector<Individual*> exist_population, Individual* individual, int edge_number)//dynamic

@@ -17,39 +17,44 @@ int main()
 	int G[DIM][DIM];
 	int pheno_heuristic[DIM], heuristic_flag = 0;
 	net::BANetworkG(G, 2, 2);
-	double a = 1.6, b = 1, c = 1, p=0.06;
-	for (a = 1.4; a <= 1.7; a += 0.1) {
-		stringstream txtname;
-		txtname << "power grid a=" << a << ".csv";
-		ofstream output(txtname.str(), ios::app);
-		for (p = 0.02; p <= 0.15; p += 0.005) {
+	double a, b, c = 1, p;
+	unsigned int seed = 1;
+	for (a = 1.6; a <1.65; a += 0.1) {
+		for (p = 0.16; p < 0.205; p += 0.01) {
+			stringstream txtname;
+			txtname << "power grid a=1.6 p=" << p << ".csv";
+			ofstream output(txtname.str(), ios::app);
 			heuristic_flag = 0;
-			for (b = 0.1; b <= 2.0; b += 0.1)
+			for (b = 0; b < 2.005; b += 0.01)
 			{
-				//TODO:传网络G进去，对固定的一个G进行优化，找到最好的组合
-				//TODO:算好网络中每个节点的初始cost，传给GA，GA传给func
 				COST_TYPE sum_cost = 0;
-				int tmp = 0;
+				/*int tmp = 0;
 				for (int i = 0; i < DIM; i++)
 				{
-					for (int j = 0; j < DIM; j++)
-					{
-						tmp += G[i][j];
-					}
+				for (int j = 0; j < DIM; j++)
+				{
+				tmp += G[i][j];
 				}
-				sum_cost = tmp * p;
-				GA1 ga(G, sum_cost, a, b, c);
+				}	//tmp = 3994, based on parameter setting m0=m=2.*/
+				sum_cost = 3994 * p;
+
 #ifdef _USE_HEURISTIC_INIT
 				if (heuristic_flag)
 				{
 					ga.HeuristicInit(pheno_heuristic);
 				}
 #endif
-				ga.output = &output;
-				*ga.output << p << "," << b << ",,";
-				for (int i = 0; i < 1; i++)
+				for (int i = 0; i < 50; i++)
 				{
-					cout << "The " << i + 1 << " times of " << txtname.str() << ". p="<<p<<", b="<<b << endl;
+					srand(i);	//synchronize 50 networks
+					rand();
+					net::BANetworkG(G, 2, 2);
+					srand(seed + unsigned(time(NULL)));	//rand, use seed+time to avoid too fast
+					seed = rand();
+					GA1 ga(G, sum_cost, a, b, c);
+					ga.output = &output;
+					*ga.output << b << "," << i << ",";
+					cout << "The " << i + 1 << " times of " << txtname.str() << ". b=" << b << endl;
 					ga.Run(pheno_heuristic);//test
 #ifdef _USE_HEURISTIC_INIT
 					heuristic_flag = 1;
@@ -59,6 +64,6 @@ int main()
 		}
 	}
 	//system("pause");
-    return 0;
+	return 0;
 }
 

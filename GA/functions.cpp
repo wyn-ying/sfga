@@ -46,25 +46,25 @@ Functions::Functions(int index)
 }
 /*double Functions::F(double x[DIM])
 {
-	switch (idx)
-	{
-	case 1:
-		return Griewank(x); break;
-	case 2:
-		return Ras(x); break;
-	case 3:
-		return Rosenbrock(x); break;
-	case 4:
-		return Ackley(x); break;
-	case 5:
-		return Sphere(x); break;
-	case 6:
-		return Schwefel_P2_22(x); break;
-	case 7:
-		return QuaticNoise(x); break;
-	default:
-		return 0;break;
-	}
+switch (idx)
+{
+case 1:
+return Griewank(x); break;
+case 2:
+return Ras(x); break;
+case 3:
+return Rosenbrock(x); break;
+case 4:
+return Ackley(x); break;
+case 5:
+return Sphere(x); break;
+case 6:
+return Schwefel_P2_22(x); break;
+case 7:
+return QuaticNoise(x); break;
+default:
+return 0;break;
+}
 }*/
 
 int Functions::F(int x[DIM])
@@ -85,7 +85,7 @@ int Functions::F(int x[DIM])
 	cascading(node, idx, idx_num, c);
 	component_size_after_attack = net::Connectivity(node);
 
-	return component_size_after_attack - original_robustness;
+	return component_size_after_attack;
 }
 
 double Functions::Griewank(double x[DIM])
@@ -159,11 +159,11 @@ double Functions::Schwefel_P2_22(double x[DIM])
 double Functions::QuaticNoise(double x[DIM])
 {
 	double f = 0;
-	for (int d = 0;d < DIM ; d++)
+	for (int d = 0;d < DIM; d++)
 	{
 		f = f + (d + 1)*pow(x[d], 4);
 	}
-	f = f + (double)rand()/RAND_MAX;
+	f = f + (double)rand() / RAND_MAX;
 	return f;
 }
 void RndSort(int index[DIM])
