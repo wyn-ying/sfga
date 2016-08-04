@@ -85,7 +85,7 @@ int Functions::F(int x[DIM])
 	cascading(node, idx, idx_num, c);
 	component_size_after_attack = net::Connectivity(node);
 
-	return component_size_after_attack - original_robustness;
+	return component_size_after_attack;
 }
 
 double Functions::Griewank(double x[DIM])
