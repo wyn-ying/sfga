@@ -83,7 +83,7 @@ void GA1::Run(int gbest_pheno[DIM])
 				sum += func.node[idx[i]].cost;
 			}
 			cout << "The total cost is: " << sum << endl;*/
-			/**output << gbest->funcVal << ",";
+			*output << gbest->funcVal << ",";
 			if (gbest->funcVal == 1)
 			{
 				for (g+=1;g < GMAX; g++)
@@ -94,21 +94,21 @@ void GA1::Run(int gbest_pheno[DIM])
 					}
 				}
 				break;
-			}*/
+			}
 			//cout << g << "\t";
 		}
 		//cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
-	*output << func.original_robustness << "," << gbest->funcVal << endl;
-	/*for (int i = 0; i < DIM; i++)
+	*output << gbest->funcVal << ",";
+	for (int i = 0; i < DIM; i++)
 	{
 		if (gbest->phenotype[i] == 1)
 		{
 			*output << "," << i;
 		}
 	}
-	*output << endl;*/
-	cout << "origin robustness:" << func.original_robustness <<", gbest:" << gbest->funcVal << endl;
+	*output << endl;
+	cout << "funcVal of gbest:" << gbest->funcVal << endl << endl;
 
 	for (int i = 0; i < DIM; i++)
 	{
