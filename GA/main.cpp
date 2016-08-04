@@ -11,14 +11,14 @@ using namespace std;
 
 int main()
 {
-	srand(1);
+	srand(2);
 	rand();
 	//srand((unsigned)time(NULL));
 	int G[DIM][DIM];
 	int pheno_heuristic[DIM], heuristic_flag = 0;
 	net::BANetworkG(G, 2, 2);
 	double a = 1.6, b = 1, c = 1, p=0.06;
-	for (p = 0.03; p <= 0.03; p += 0.005) {
+	for (p = 0.03; p <= 0.2; p += 0.005) {
 		stringstream txtname;
 		txtname << "power grid p=" << p << ".csv";
 		ofstream output(txtname.str(), ios::app);

@@ -17,6 +17,7 @@ public:
 	string name;
 	COST_TYPE sum_cost;
 	double c;
+	int original_robustness;
 public:
 	Functions();
 	Functions(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);

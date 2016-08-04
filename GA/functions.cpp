@@ -12,6 +12,13 @@ Functions::Functions(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, do
 	net::SetNetwork(node, G);
 	SetCapacity(node, a, b);
 	this->c = c;
+
+	int idx[DIM];
+	Node node[DIM];
+	CopyNode(this->node, node);
+	cascading(node, idx, 0, c);
+	original_robustness = net::Connectivity(node);
+
 }
 
 Functions::Functions(int index)
@@ -62,9 +69,9 @@ Functions::Functions(int index)
 
 int Functions::F(int x[DIM])
 {
-	int lagest_component_size;
+	int component_size_after_attack;
 	Node node[DIM];
-	CopyNode(this->node, node);	//TODO:初始化的时候也可以做点优化，G拷贝的时候可以memcpy，node初始化的时候可以用一组原始的node[DIM]拷贝，这样就可以把第一次的Setnetwork省略掉
+	CopyNode(this->node, node);
 	int idx[DIM];
 	int idx_num = 0;
 	for (int i = 0; i < DIM; i++)
@@ -76,8 +83,9 @@ int Functions::F(int x[DIM])
 		}
 	}
 	cascading(node, idx, idx_num, c);
-	lagest_component_size = net::Connectivity(node);
-	return lagest_component_size;
+	component_size_after_attack = net::Connectivity(node);
+
+	return component_size_after_attack - original_robustness;
 }
 
 double Functions::Griewank(double x[DIM])
