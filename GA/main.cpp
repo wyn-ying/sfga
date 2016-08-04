@@ -18,11 +18,11 @@ int main()
 	int pheno_heuristic[DIM], heuristic_flag = 0;
 	net::BANetworkG(G, 2, 2);
 	double a = 1.6, b = 1, c = 1, p=0.06;
-	for (p = 0.03; p <= 0.2; p += 0.005) {
+	for (a = 1.4; a <= 1.7; a += 0.1) {
 		stringstream txtname;
-		txtname << "power grid p=" << p << ".csv";
+		txtname << "power grid a=" << a << ".csv";
 		ofstream output(txtname.str(), ios::app);
-		for (a = 1.6; a <= 2.0; a += 0.1) {
+		for (p = 0.02; p <= 0.15; p += 0.005) {
 			heuristic_flag = 0;
 			for (b = 0.1; b <= 2.0; b += 0.1)
 			{
@@ -46,10 +46,10 @@ int main()
 				}
 #endif
 				ga.output = &output;
-				*ga.output << a << "," << b << ",,";
+				*ga.output << p << "," << b << ",,";
 				for (int i = 0; i < 1; i++)
 				{
-					cout << "The " << i + 1 << " times of " << txtname.str() << ". a="<<a<<", b="<<b << endl;
+					cout << "The " << i + 1 << " times of " << txtname.str() << ". p="<<p<<", b="<<b << endl;
 					ga.Run(pheno_heuristic);//test
 #ifdef _USE_HEURISTIC_INIT
 					heuristic_flag = 1;
