@@ -188,3 +188,7 @@ void RndSort(int index[DIM], int num)
 		index[i] = tmp;
 	}
 }
+Functions::~Functions()
+{
+
+}

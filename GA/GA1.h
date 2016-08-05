@@ -12,6 +12,7 @@ class GA1
 {
 public:
 	Functions func;
+	Functions *ff;
 	vector<Individual*> population;
 	Individual* gbest;
 	ofstream* output;
@@ -21,6 +22,7 @@ private:
 	int use_heuristic_flag;
 public:
 	GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);
+	~GA1();
 	void HeuristicInit(int pheno_heuristic[DIM]);
 	void Init();
 	void Run(int gbest_pheno[DIM]);

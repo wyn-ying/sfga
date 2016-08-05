@@ -20,6 +20,7 @@ public:
 	int original_robustness;
 public:
 	Functions();
+	~Functions();
 	Functions(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c);
 	Functions(int index);
 //	double F(double x[DIM]);
