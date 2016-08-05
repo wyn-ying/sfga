@@ -99,7 +99,7 @@ void GA1::Run(int gbest_pheno[DIM])
 		}
 		//cout << "funcVal of gbest is:" << gbest->funcVal << endl;
 	}
-	*output << func.original_robustness << "," << gbest->funcVal << endl;
+	//*output << func.original_robustness << "," << gbest->funcVal << endl;
 	/*for (int i = 0; i < DIM; i++)
 	{
 	if (gbest->phenotype[i] == 1)
@@ -116,6 +116,10 @@ void GA1::Run(int gbest_pheno[DIM])
 		gbest_pheno[i] = gbest->phenotype[i];
 #endif
 		pheno_heuristic[i] = gbest->phenotype[i];
+		if (gbest->phenotype[i] == 1)
+		{
+			num_of_degree[func.node[i].degree] += 1;
+		}
 	}
 
 	Free(population);

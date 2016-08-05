@@ -15,6 +15,7 @@ public:
 	vector<Individual*> population;
 	Individual* gbest;
 	ofstream* output;
+	map<int, int>num_of_degree;
 private:
 	int pheno_heuristic[DIM];
 	int use_heuristic_flag;

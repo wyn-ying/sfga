@@ -21,12 +21,14 @@ int main()
 	unsigned int seed = 1;
 	for (a = 1.6; a <1.65; a += 0.1) {
 		for (p = 0.16; p < 0.205; p += 0.01) {
-			stringstream txtname;
-			txtname << "power grid a=1.6 p=" << p << ".csv";
-			ofstream output(txtname.str(), ios::app);
-			heuristic_flag = 0;
-			for (b = 0; b < 2.005; b += 0.01)
+			for (b = 0; b < 2.005; b += 0.1)
 			{
+				stringstream txtname;
+				txtname << "power grid fig5 a=1.6 p=" << p << " b="<< b << ".csv";
+				ofstream output(txtname.str(), ios::app);
+				heuristic_flag = 0;
+
+				map<int, int> num_of_degree;
 				COST_TYPE sum_cost = 0;
 				/*int tmp = 0;
 				for (int i = 0; i < DIM; i++)
@@ -56,10 +58,19 @@ int main()
 					*ga.output << b << "," << i << ",";
 					cout << "The " << i + 1 << " times of " << txtname.str() << ". b=" << b << endl;
 					ga.Run(pheno_heuristic);//test
+					for (map<int, int>::iterator i = ga.num_of_degree.begin(); i != ga.num_of_degree.end(); i++)
+					{
+						num_of_degree[i->first] += i->second;
+					}
 #ifdef _USE_HEURISTIC_INIT
 					heuristic_flag = 1;
 #endif
 				}
+				for (map<int, int>::iterator i = num_of_degree.begin(); i != num_of_degree.end(); i++)
+				{
+					output << i->first << "," << i->second << endl;
+				}
+				output.close();
 			}
 		}
 	}
