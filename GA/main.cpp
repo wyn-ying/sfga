@@ -20,7 +20,7 @@ int main()
 	double a, b, c = 1, p;
 	unsigned int seed = 1;
 	for (a = 1.6; a <1.65; a += 0.1) {
-		for (b = 1.6; b < 2.05; b += 0.1) {
+		for (b = 0; b < 0.55; b += 0.1) {
 			stringstream txtname;
 			txtname << "power grid a=1.6 b=" << b << ".csv";
 			ofstream output(txtname.str(), ios::app);
@@ -53,8 +53,8 @@ int main()
 					seed = rand();
 					GA1 ga(G, sum_cost, a, b, c);
 					ga.output = &output;
-					*ga.output << b << "," << i << ",";
-					cout << "The " << i + 1 << " times of " << txtname.str() << ". b=" << b << endl;
+					*ga.output << p << "," << i << ",";
+					cout << "The " << i + 1 << " times of " << txtname.str() << ". p=" << p << endl;
 					ga.Run(pheno_heuristic);//test
 #ifdef _USE_HEURISTIC_INIT
 					heuristic_flag = 1;
