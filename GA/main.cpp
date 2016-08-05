@@ -20,12 +20,12 @@ int main()
 	double a, b, c = 1, p;
 	unsigned int seed = 1;
 	for (a = 1.6; a <1.65; a += 0.1) {
-		for (p = 0.16; p < 0.205; p += 0.01) {
+		for (b = 1.6; b < 2.05; b += 0.1) {
 			stringstream txtname;
-			txtname << "power grid a=1.6 p=" << p << ".csv";
+			txtname << "power grid a=1.6 b=" << b << ".csv";
 			ofstream output(txtname.str(), ios::app);
 			heuristic_flag = 0;
-			for (b = 0; b < 2.005; b += 0.01)
+			for (p = 0; p < 0.201; p += 0.002)
 			{
 				COST_TYPE sum_cost = 0;
 				/*int tmp = 0;
