@@ -5,7 +5,8 @@ using namespace std;
 
 GA1::GA1(int G[DIM][DIM], COST_TYPE sum_cost, double a, double b, double c)
 {
-	func = *new Functions(G, sum_cost, a, b, c);
+	ff = new Functions(G, sum_cost, a, b, c);
+	func = *ff;
 	use_heuristic_flag = 0;
 
 }
@@ -639,4 +640,8 @@ void GA1::SDP(int pheno[DIM])
 			break;
 		}
 	}
+}
+GA1::~GA1()
+{
+	delete ff;
 }
