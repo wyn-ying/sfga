@@ -55,7 +55,6 @@ int main()
 					seed = rand();
 					GA1 ga(G, sum_cost, a, b, c);
 					ga.output = &output;
-					*ga.output << b << "," << i << ",";
 					cout << "The " << i + 1 << " times of " << txtname.str() << ". b=" << b << endl;
 					ga.Run(pheno_heuristic);//test
 					for (map<int, int>::iterator i = ga.num_of_degree.begin(); i != ga.num_of_degree.end(); i++)
