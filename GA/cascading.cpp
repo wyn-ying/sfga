@@ -7,6 +7,99 @@ void cascading(Node node[DIM], int index[], int num, double c)
 	int flag = 0;
 	vector<Node*>::iterator nbr;
 	vector<Node*>::iterator nbrOfNbr;
+	//attack nodes
+	COST_TYPE assign_sum = 0;
+	for (int i = 0; i < num; i++)
+	{
+		target = index[i];
+		assign_sum = 0;
+		for (nbr = node[target].neighbor.begin(); nbr != node[target].neighbor.end(); nbr++)
+		{
+			assign_sum += (pow((*nbr)->degree, c));
+			//assign_sum += (*nbr)->degree;
+		}
+		for (nbr = node[target].neighbor.begin(); nbr != node[target].neighbor.end(); nbr++)
+		{
+			(*nbr)->Ci += (node[target].Ci * pow((*nbr)->degree, c) / assign_sum);
+			//(*nbr)->Ci += (node[index[i]].Ci * (*nbr)->degree / assign_sum);
+
+			for (nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+			{
+				if ((*nbrOfNbr) == &node[target])
+				{
+					(*nbr)->neighbor.erase(nbrOfNbr);
+
+					(*nbr)->degree -= 1;
+					break;
+
+				}
+			}
+		}// 找到该节点所有邻居点的邻居点然后去掉自己；
+		node[target].degree = 0;
+		node[target].Ci = 0;
+		node[target].neighbor.clear();
+	}
+	for (int i = 0; i < DIM; i++)
+	{
+		if (node[i].Ci > node[i].Cm)
+		{
+			flag = 1;
+		}
+	}
+
+	while (flag)
+	{
+		flag = 0;
+
+		for (int i = 0; i < DIM; i++)
+		{
+			assign_sum = 0;
+			if (node[i].Ci > node[i].Cm)
+			{
+				for (nbr = node[i].neighbor.begin(); nbr != node[i].neighbor.end(); nbr++)
+				{
+					assign_sum += (pow((*nbr)->degree, c));
+					//assign_sum += ((*nbr)->degree);
+				}
+				for (nbr = node[i].neighbor.begin(); nbr != node[i].neighbor.end(); nbr++)
+				{
+					(*nbr)->Ci += (node[i].Ci * pow((*nbr)->degree, c) / assign_sum);
+					//(*nbr)->Ci += (node[i].Ci * (*nbr)->degree / assign_sum);
+
+					for (nbrOfNbr = (*nbr)->neighbor.begin(); nbrOfNbr != (*nbr)->neighbor.end(); nbrOfNbr++)
+					{
+						if ((*nbrOfNbr) == &node[i])
+						{
+							(*nbr)->neighbor.erase(nbrOfNbr);
+							(*nbr)->degree -= 1;
+							break;
+
+						}
+					}
+
+				}
+				node[i].degree = 0;
+				node[i].Ci = 0;
+				node[i].neighbor.clear();
+
+			}
+		}
+		for (int i = 0; i < DIM; i++)
+		{
+			if (node[i].Ci > node[i].Cm)
+			{
+				flag = 1;
+				break;
+			}
+		}
+	}
+}
+/*
+void cascading(Node node[DIM], int index[], int num, double c)
+{
+	int flag = 0;
+	vector<Node*>::iterator nbr;
+	vector<Node*>::iterator nbrOfNbr;
 	//attack nodes (remove them before cascading)
 	for (int i = 0; i < num; i++)
 	{
@@ -121,7 +214,7 @@ void cascading(Node node[DIM], int index[], int num, double c)
 		}
 	}
 }
-
+*/
 /*void cascading(Node node[DIM], int index[], int num, double c)
 {
 int flag = 0;
