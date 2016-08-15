@@ -15,7 +15,7 @@ int main()
 	rand();
 	//srand((unsigned)time(NULL));
 	int G[DIM][DIM];
-	int pheno_heuristic[5][DIM];
+	int pheno_heuristic[50][DIM];
 	net::BANetworkG(G, 2, 2);
 	double a, b, c = 1, p;
 	unsigned int seed = 1;
@@ -27,7 +27,7 @@ int main()
 		}
 	}
 	for (a = 1.6; a <1.65; a += 0.1) {
-		for (b = 0; b < 0.55; b += 0.1) {
+		for (b = 0; b < 2.05; b += 0.1) {
 			stringstream txtname;
 			txtname << "power grid a=1.6 b=" << b << ".csv";
 			ofstream output(txtname.str(), ios::app);
