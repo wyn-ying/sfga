@@ -4,7 +4,7 @@
 
 void cascading(Node node[DIM], int index[], int num, double c)
 {
-	int flag = 0;
+	int flag = 0, target = 0;;
 	vector<Node*>::iterator nbr;
 	vector<Node*>::iterator nbrOfNbr;
 	//attack nodes
