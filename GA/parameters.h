@@ -28,6 +28,6 @@
 #define GMAX		100
 //#define FES			100000
 
-//#define _USE_HEURISTIC_INIT
+#define _USE_HEURISTIC_INIT
 #define HEURISTIC_P	0.2
 #define SMALL_DEGREE_P	0.2
