@@ -15,16 +15,23 @@ int main()
 	rand();
 	//srand((unsigned)time(NULL));
 	int G[DIM][DIM];
-	int pheno_heuristic[DIM], heuristic_flag = 0;
+	int pheno_heuristic[50][DIM];
 	net::BANetworkG(G, 2, 2);
 	double a, b, c = 1, p;
 	unsigned int seed = 1;
+	for (int t = 0; t < 50; t++)
+	{
+		for (int i = 0; i < DIM; i++)
+		{
+			pheno_heuristic[t][i] = 0;
+		}
+	}
+
 	for (a = 1.6; a <1.65; a += 0.1) {
 		for (p = 0; p < 0.055; p += 0.01) {
 			stringstream txtname;
 			txtname << "power grid a=1.6 p=" << p << ".csv";
 			ofstream output(txtname.str(), ios::app);
-			heuristic_flag = 0;
 			for (b = 0; b < 2.005; b += 0.01)
 			{
 				COST_TYPE sum_cost = 0;
@@ -38,12 +45,6 @@ int main()
 				}	//tmp = 3994, based on parameter setting m0=m=2.*/
 				sum_cost = 3994 * p;
 
-#ifdef _USE_HEURISTIC_INIT
-				if (heuristic_flag)
-				{
-					ga.HeuristicInit(pheno_heuristic);
-				}
-#endif
 				for (int i = 0; i < 50; i++)
 				{
 					srand(i);	//synchronize 50 networks
@@ -52,12 +53,15 @@ int main()
 					srand(seed + unsigned(time(NULL)));	//rand, use seed+time to avoid too fast
 					seed = rand();
 					GA1 ga(G, sum_cost, a, b, c);
+#ifdef _USE_HEURISTIC_INIT
+					ga.HeuristicInit(pheno_heuristic[i]);
+#endif
 					ga.output = &output;
 					*ga.output << b << "," << i << ",";
 					cout << "The " << i + 1 << " times of " << txtname.str() << ". b=" << b << endl;
-					ga.Run(pheno_heuristic);//test
+					ga.Run(pheno_heuristic[i]);//test
 #ifdef _USE_HEURISTIC_INIT
-					heuristic_flag = 1;
+
 #endif
 				}
 			}
