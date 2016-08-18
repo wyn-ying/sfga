@@ -2,7 +2,7 @@
 #include <math.h>
 #include "cascading.h"
 
-/*void cascading(Node node[DIM], int index[], int num, double c)
+void cascading(Node node[DIM], int index[], int num, double c)
 {
 	int flag = 0, target = 0;
 	vector<Node*>::iterator nbr;
@@ -93,8 +93,8 @@
 			}
 		}
 	}
-}*/
-
+}
+/*
 void cascading(Node node[DIM], int index[], int num, double c)
 {
 	int flag = 0;
@@ -213,7 +213,7 @@ void cascading(Node node[DIM], int index[], int num, double c)
 			}
 		}
 	}
-}
+}*/
 /*void cascading(Node node[DIM], int index[], int num, double c)
 {
 int flag = 0;
