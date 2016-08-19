@@ -28,8 +28,8 @@ int main()
 	}
 
 	for (a = 1.6; a <1.65; a += 0.1) {
-		for (p = 0; p < 0.205; p += 0.01) {
-			for (b = 0; b < 2.005; b += 0.1)
+		for (p = 0.16; p < 0.205; p += 0.01) {
+			for (b = 0; b < 4.005; b += 0.1)
 			{
 				stringstream txtname;
 				txtname << "power grid fig5 a=1.6 p=" << p << " b="<< b << ".csv";
