@@ -32,7 +32,7 @@ int main()
 			stringstream txtname;
 			txtname << "power grid a=1.6 p=" << p << ".csv";
 			ofstream output(txtname.str(), ios::app);
-			for (b = 0; b < 2.005; b += 0.01)
+			for (b = 0; b < 4.005; b += 0.02)
 			{
 				COST_TYPE sum_cost = 0;
 				/*int tmp = 0;

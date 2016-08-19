@@ -606,7 +606,7 @@ void GA1::LDP(int pheno[DIM])
 		if (tmp_cost > func.sum_cost)
 		{
 			pheno[idx[i]] = 0;
-			break;
+			tmp_cost -= func.node[idx[i]].cost;
 		}
 	}
 }
