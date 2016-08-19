@@ -27,7 +27,7 @@ int main()
 		}
 	}
 	for (a = 1.6; a <1.65; a += 0.1) {
-		for (b = 0; b < 0.55; b += 0.1) {
+		for (b = 3.1; b < 4.05; b += 0.1) {
 			stringstream txtname;
 			txtname << "power grid a=1.6 b=" << b << ".csv";
 			ofstream output(txtname.str(), ios::app);
