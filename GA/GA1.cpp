@@ -5,7 +5,8 @@ using namespace std;
 
 GA1::GA1(int func_idx)
 {
-	func = *new Functions(func_idx);
+	ff = new Functions(func_idx);
+	func = *ff;
 }
 
 void GA1::Init()
@@ -466,4 +467,8 @@ void GA1::Free(vector<Individual*>::iterator begin, vector<Individual*>::iterato
 			*i = NULL;
 		}
 	}
+}
+GA1::~GA1()
+{
+	delete ff;
 }

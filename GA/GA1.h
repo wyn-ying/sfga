@@ -12,11 +12,13 @@ class GA1
 {
 public:
 	Functions func;
+	Functions *ff;
 	vector<Individual*> population;
 	Individual* gbest;
 	ofstream* output;
 public:
 	GA1(int func_idx);
+	~GA1();
 	void Init();
 	void Run();
 	void Reproduct();

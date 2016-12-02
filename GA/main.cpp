@@ -40,7 +40,7 @@ int main()
 		ofstream output(txtname.str());
 		GA1 ga(funcID);
 		ga.output = &output;
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 50; i++)
 		{
 			cout << "The " << i + 1 << " times of " << txtname.str() << "." << endl;
 			ga.Run();//test
